@@ -182,12 +182,14 @@ Example steps:
   "exported": {
     "robot": "/s3/store",
     "use": "resized",
-    "credentials": "YOUR_AWS_CREDENTIALS",
+    "credentials": "YOUR_TRANSLOADIT_TEMPLATE_CREDENTIALS_NAME",
     "path": "uppy-nextjs/${unique_prefix}/${file.url_name}",
-    "acl": "public-read"
+    "acl": "private"
   }
 }
 ```
+
+If you intentionally want public objects, change `"acl"` to `"public-read"` (and consider bucket policy, access logs, and data retention).
 
 Then create a template and set `TRANSLOADIT_TEMPLATE_ID`:
 

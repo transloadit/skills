@@ -3,6 +3,7 @@ const cp = require('node:child_process')
 const fsSync = require('node:fs')
 const fs = require('node:fs/promises')
 const path = require('node:path')
+const stream = require('node:stream')
 const util = require('node:util')
 
 function sleep(ms) {
@@ -10,12 +11,26 @@ function sleep(ms) {
 }
 
 function usageAndExit(code) {
-  console.error('Usage: node --experimental-strip-types _scripts/try-skill.ts --skill <name> --starter-project <name>')
+  console.error(
+    'Usage: node --experimental-strip-types _scripts/try-skill.ts --skill <name> --starter-project <name> [--model <name>] [--unsafe-forward-all-env]'
+  )
   process.exit(code)
 }
 
 function sanitizeSegment(s) {
   return String(s).replace(/[^a-zA-Z0-9._-]+/g, '-')
+}
+
+function assertSafeSegment(value, label) {
+  const s = String(value || '')
+  if (!s) throw new Error(`${label} is required`)
+  if (s.length > 128) throw new Error(`${label} is too long`)
+  if (s.includes('/') || s.includes('\\')) throw new Error(`${label} must not contain path separators`)
+  if (s === '.' || s === '..' || s.includes('..')) throw new Error(`${label} must not contain '..'`)
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(s)) {
+    throw new Error(`${label} must match /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/`)
+  }
+  return s
 }
 
 async function exists(p) {
@@ -55,6 +70,10 @@ function parseDotenv(content) {
     let v = trimmed.slice(eq + 1).trim()
     if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) {
       v = v.slice(1, -1)
+    } else {
+      // Strip inline comments for unquoted values: FOO=bar # comment
+      const hash = v.indexOf(' #')
+      if (hash !== -1) v = v.slice(0, hash).trimEnd()
     }
     env[k] = v
   }
@@ -108,6 +127,43 @@ async function redactFileInPlace(filePath, redactValues) {
   await fs.writeFile(filePath, content, 'utf8')
 }
 
+function createRedactingTransform(redactValues) {
+  const secrets = Array.isArray(redactValues) ? redactValues.filter(Boolean) : []
+  if (secrets.length === 0) return new stream.PassThrough()
+
+  const maxSecretLen = Math.max(...secrets.map((s) => String(s).length))
+  let tail = ''
+
+  return new stream.Transform({
+    transform(chunk, _enc, cb) {
+      try {
+        const str = tail + chunk.toString('utf8')
+        const keepFrom = Math.max(0, str.length - (maxSecretLen - 1))
+        tail = str.slice(keepFrom)
+
+        let out = str.slice(0, keepFrom)
+        for (const secret of secrets) {
+          out = out.split(secret).join('REDACTED')
+        }
+        cb(null, out)
+      } catch (e) {
+        cb(e)
+      }
+    },
+    flush(cb) {
+      try {
+        let out = tail
+        for (const secret of secrets) {
+          out = out.split(secret).join('REDACTED')
+        }
+        cb(null, out)
+      } catch (e) {
+        cb(e)
+      }
+    },
+  })
+}
+
 function spawnAndTee({ cwd, ws, cmd, args, env }) {
   return new Promise((resolve) => {
     const child = cp.spawn(cmd, args, {
@@ -117,6 +173,14 @@ function spawnAndTee({ cwd, ws, cmd, args, env }) {
     })
     child.stdout.pipe(ws, { end: false })
     child.stderr.pipe(ws, { end: false })
+    child.on('error', (err) => {
+      try {
+        ws.write(`\n[spawn error] ${cmd}: ${String(err && err.message ? err.message : err)}\n`)
+      } catch {
+        // ignore
+      }
+      resolve(1)
+    })
     child.on('close', (code) => resolve(code ?? 1))
   })
 }
@@ -147,12 +211,73 @@ async function loadAcceptance({ repoRoot, skill }) {
   return { acceptancePath, lines }
 }
 
+function buildChildEnv({ baseEnv, overlay, unsafeForwardAllEnv }) {
+  if (unsafeForwardAllEnv) {
+    return { ...baseEnv, ...overlay }
+  }
+
+  // Minimal forward: enough for `npm`, `git`, `codex` to run, without exposing unrelated tokens.
+  // If your local `codex` CLI requires env-based auth, use `--unsafe-forward-all-env`.
+  const allowExact = new Set([
+    'PATH',
+    'HOME',
+    'USER',
+    'LOGNAME',
+    'SHELL',
+    'TERM',
+    'COLORTERM',
+    'LANG',
+    'LC_ALL',
+    'TMPDIR',
+    'TMP',
+    'TEMP',
+    'CI',
+    'NODE_OPTIONS',
+  ])
+
+  const allowPrefixes = [
+    'LC_',
+    'XDG_',
+    'NPM_CONFIG_',
+    'npm_config_',
+    'HTTP_PROXY',
+    'HTTPS_PROXY',
+    'NO_PROXY',
+    'ALL_PROXY',
+    'http_proxy',
+    'https_proxy',
+    'no_proxy',
+    'all_proxy',
+  ]
+
+  const childEnv = {}
+  for (const [k, v] of Object.entries(baseEnv || {})) {
+    if (v == null) continue
+    if (allowExact.has(k)) {
+      childEnv[k] = v
+      continue
+    }
+    if (allowPrefixes.some((p) => k.startsWith(p))) {
+      childEnv[k] = v
+    }
+  }
+
+  for (const [k, v] of Object.entries(overlay || {})) {
+    if (v == null) continue
+    childEnv[k] = v
+  }
+
+  return childEnv
+}
+
 async function main() {
   const parsed = util.parseArgs({
     args: process.argv.slice(2),
     options: {
       skill: { type: 'string' },
       'starter-project': { type: 'string' },
+      model: { type: 'string' },
+      'unsafe-forward-all-env': { type: 'boolean' },
       help: { type: 'boolean' },
     },
     allowPositionals: true,
@@ -163,8 +288,18 @@ async function main() {
   const starter = parsed.values['starter-project']
   if (!skill || !starter) usageAndExit(2)
 
+  let safeSkill
+  let safeStarter
+  try {
+    safeSkill = assertSafeSegment(skill, '--skill')
+    safeStarter = assertSafeSegment(starter, '--starter-project')
+  } catch (err) {
+    console.error(String(err && err.message ? err.message : err))
+    process.exit(2)
+  }
+
   const repoRoot = path.resolve(__dirname, '..')
-  const starterDir = path.join(repoRoot, '_starter-projects', starter)
+  const starterDir = path.join(repoRoot, '_starter-projects', safeStarter)
   if (!(await exists(starterDir))) {
     console.error(`Starter project not found: ${starterDir}`)
     process.exit(2)
@@ -172,11 +307,11 @@ async function main() {
 
   const skillPathCandidates = [
     // Preferred: repo-local skill catalog layout (Cloudflare-style).
-    path.join(repoRoot, 'skills', skill, 'SKILL.md'),
+    path.join(repoRoot, 'skills', safeSkill, 'SKILL.md'),
     // Legacy: skill folders at repo root.
-    path.join(repoRoot, skill, 'SKILL.md'),
+    path.join(repoRoot, safeSkill, 'SKILL.md'),
     // Also allow dev-only skill dir for this repo (handy for local experiments).
-    path.join(repoRoot, '.ai', 'dev-skills', skill, 'SKILL.md'),
+    path.join(repoRoot, '.ai', 'dev-skills', safeSkill, 'SKILL.md'),
   ]
 
   let skillPath = null
@@ -194,20 +329,24 @@ async function main() {
 
   const iso = new Date().toISOString().replace(/[:.]/g, '-')
   const startedAt = new Date().toISOString()
-  const runRoot = path.join(repoRoot, '_starter-projects', '_runs', starter)
-  const runDirName = `${iso}-${sanitizeSegment(skill)}`
+  const runRoot = path.join(repoRoot, '_starter-projects', '_runs', safeStarter)
+  const runDirName = `${iso}-${sanitizeSegment(safeSkill)}`
   const runDir = path.join(runRoot, runDirName)
 
   await copyDir(starterDir, runDir)
   const envOverlay = await loadEnvOverlayFromRepoDotenv(repoRoot)
-  const childEnv = { ...process.env, ...envOverlay.overlay }
+  const childEnv = buildChildEnv({
+    baseEnv: process.env,
+    overlay: envOverlay.overlay,
+    unsafeForwardAllEnv: Boolean(parsed.values['unsafe-forward-all-env']),
+  })
 
   const transcriptPath = path.join(runDir, 'codex.transcript.jsonl')
   const lastMsgPath = path.join(runDir, 'codex.last-message.txt')
   const summaryPath = path.join(runDir, 'try-skill.summary.json')
   const diffStatPath = path.join(runDir, 'try-skill.diff.stat.txt')
 
-  const acceptance = await loadAcceptance({ repoRoot, skill })
+  const acceptance = await loadAcceptance({ repoRoot, skill: safeSkill })
 
   const prompt = [
     'You are operating inside a single Next.js project directory.',
@@ -251,6 +390,7 @@ async function main() {
   ].join('\n')
 
   const cmd = 'codex'
+  const model = parsed.values.model || process.env.CODEX_MODEL || 'gpt-5.3-codex'
   const cmdArgs = [
     '--dangerously-bypass-approvals-and-sandbox',
     'exec',
@@ -261,7 +401,7 @@ async function main() {
     '-C',
     runDir,
     '-m',
-    'gpt-5.3-codex',
+    model,
     '--output-last-message',
     lastMsgPath,
     prompt,
@@ -270,7 +410,9 @@ async function main() {
   console.log(`Run dir: ${runDir}`)
   console.log(`Transcript: ${transcriptPath}`)
 
-  const ws = fsSync.createWriteStream(transcriptPath, { flags: 'a' })
+  const transcriptWs = fsSync.createWriteStream(transcriptPath, { flags: 'a' })
+  const ws = createRedactingTransform(envOverlay.redactValues)
+  ws.pipe(transcriptWs)
 
   const codex = await runStep({
     ws,
@@ -285,11 +427,13 @@ async function main() {
   // Diff stat (best-effort). Do this before validation so `.next/` doesn't churn during diff.
   try {
     await appendMarker(ws, 'DIFF STAT (starter -> run)')
-    const diffStat = cp.execFileSync('git', ['diff', '--no-index', '--stat', starterDir, runDir], {
+    const diff = cp.spawnSync('git', ['diff', '--no-index', '--stat', starterDir, runDir], {
       encoding: 'utf8',
       cwd: repoRoot,
       stdio: ['ignore', 'pipe', 'pipe'],
     })
+    // Exit code: 0 = no diff, 1 = diff found. Both are "success" for our purposes.
+    const diffStat = String(diff.stdout || '')
     await fs.writeFile(diffStatPath, diffStat, 'utf8')
     ws.write(diffStat + '\n')
   } catch {
@@ -321,22 +465,24 @@ async function main() {
     },
   })
 
-  await new Promise((resolve) => ws.end(resolve))
+  ws.end()
+  await new Promise((resolve) => transcriptWs.on('close', resolve))
 
   // Redact secrets from captured outputs (best-effort).
-  await redactFileInPlace(transcriptPath, envOverlay.redactValues)
+  // Transcript is redacted on-the-fly, but `codex --output-last-message` writes directly.
   await redactFileInPlace(lastMsgPath, envOverlay.redactValues)
 
+  const runDirRel = path.relative(repoRoot, runDir)
   const summary = {
-    skill,
-    starterProject: starter,
-    runDir,
-    transcriptPath,
-    lastMsgPath,
-    diffStatPath: (await exists(diffStatPath)) ? diffStatPath : null,
+    skill: safeSkill,
+    starterProject: safeStarter,
+    runDir: runDirRel,
+    transcriptPath: path.relative(repoRoot, transcriptPath),
+    lastMsgPath: path.relative(repoRoot, lastMsgPath),
+    diffStatPath: (await exists(diffStatPath)) ? path.relative(repoRoot, diffStatPath) : null,
     startedAt,
     endedAt: new Date().toISOString(),
-    codex: { exitCode: codex.exitCode, wallTimeMs: codex.wallTimeMs },
+    codex: { exitCode: codex.exitCode, wallTimeMs: codex.wallTimeMs, model },
     validate: {
       npmCi,
       e2e,
