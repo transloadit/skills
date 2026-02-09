@@ -24,7 +24,7 @@ Pick the root:
 
 ## 1) Server route: sign Smart CDN URLs
 
-Create `app/api/smartcdn/route.ts`:
+Create `app/api/smartcdn/route.ts` (or `src/app/api/smartcdn/route.ts` if you use `src/`):
 
 ```ts
 import { NextResponse } from 'next/server'
@@ -59,7 +59,7 @@ export async function GET() {
 
 ## 2) Optional: a tiny demo page
 
-Create `app/smartcdn/page.tsx`:
+Create `app/smartcdn/page.tsx` (or `src/app/smartcdn/page.tsx`):
 
 ```tsx
 import SmartCdnDemo from './smartcdn-demo'
@@ -74,7 +74,7 @@ export default function SmartCdnPage() {
 }
 ```
 
-Create `app/smartcdn/smartcdn-demo.tsx`:
+Create `app/smartcdn/smartcdn-demo.tsx` (or `src/app/smartcdn/smartcdn-demo.tsx`):
 
 ```tsx
 'use client'

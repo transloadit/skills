@@ -24,7 +24,7 @@ Pick the root:
 
 ## 1) Server: return signed Assembly options to the browser
 
-Create `app/api/transloadit/assembly-options/route.ts`:
+Create `app/api/transloadit/assembly-options/route.ts` (or `src/app/api/transloadit/assembly-options/route.ts` if you use `src/`):
 
 ```ts
 import { NextResponse } from 'next/server'

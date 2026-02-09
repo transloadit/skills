@@ -12,7 +12,7 @@ function sleep(ms) {
 
 function usageAndExit(code) {
   console.error(
-    'Usage: node --experimental-strip-types _scripts/try-skill.ts --skill <name> --starter-project <name> [--model <name>] [--unsafe-forward-all-env]'
+    'Usage: node _scripts/try-skill.js --skill <name> --starter-project <name> [--model <name>] [--unsafe-forward-all-env]'
   )
   process.exit(code)
 }
@@ -83,6 +83,16 @@ function parseDotenv(content) {
 function shouldRedactKey(k) {
   // Keep simple and conservative: redact anything ending in these tokens.
   return /(SECRET|TOKEN|PASSWORD|KEY)$/i.test(String(k))
+}
+
+function collectRedactValuesFromEnv(env) {
+  const redactValues = []
+  for (const [k, v] of Object.entries(env || {})) {
+    if (!shouldRedactKey(k)) continue
+    if (typeof v === 'string' && v) redactValues.push(v)
+  }
+  // De-dupe while preserving order.
+  return [...new Set(redactValues)]
 }
 
 async function loadEnvOverlayFromRepoDotenv(repoRoot) {
@@ -233,6 +243,22 @@ function buildChildEnv({ baseEnv, overlay, unsafeForwardAllEnv }) {
     'TEMP',
     'CI',
     'NODE_OPTIONS',
+
+    // Common AI provider auth (needed by some Codex/agent setups).
+    'OPENAI_API_KEY',
+    'OPENAI_ORG_ID',
+    'OPENAI_PROJECT',
+    'OPENAI_BASE_URL',
+    'OPENAI_API_BASE',
+    'CODEX_API_KEY',
+    'CODEX_TOKEN',
+    'CODEX_AUTH_TOKEN',
+    'ANTHROPIC_API_KEY',
+    'GOOGLE_API_KEY',
+    'GEMINI_API_KEY',
+    'AZURE_OPENAI_API_KEY',
+    'AZURE_OPENAI_ENDPOINT',
+    'AZURE_OPENAI_API_VERSION',
   ])
 
   const allowPrefixes = [
@@ -340,6 +366,7 @@ async function main() {
     overlay: envOverlay.overlay,
     unsafeForwardAllEnv: Boolean(parsed.values['unsafe-forward-all-env']),
   })
+  const redactValues = collectRedactValuesFromEnv(childEnv)
 
   const transcriptPath = path.join(runDir, 'codex.transcript.jsonl')
   const lastMsgPath = path.join(runDir, 'codex.last-message.txt')
@@ -411,7 +438,7 @@ async function main() {
   console.log(`Transcript: ${transcriptPath}`)
 
   const transcriptWs = fsSync.createWriteStream(transcriptPath, { flags: 'a' })
-  const ws = createRedactingTransform(envOverlay.redactValues)
+  const ws = createRedactingTransform(redactValues)
   ws.pipe(transcriptWs)
 
   const codex = await runStep({
@@ -470,7 +497,7 @@ async function main() {
 
   // Redact secrets from captured outputs (best-effort).
   // Transcript is redacted on-the-fly, but `codex --output-last-message` writes directly.
-  await redactFileInPlace(lastMsgPath, envOverlay.redactValues)
+  await redactFileInPlace(lastMsgPath, redactValues)
 
   const runDirRel = path.relative(repoRoot, runDir)
   const summary = {
@@ -487,6 +514,7 @@ async function main() {
       npmCi,
       e2e,
     },
+    redaction: { valuesCount: redactValues.length },
   }
   await fs.writeFile(summaryPath, JSON.stringify(summary, null, 2) + '\n', 'utf8')
 
