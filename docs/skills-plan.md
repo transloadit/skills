@@ -17,7 +17,7 @@ Goal: a small, reliable set of skills that map directly to the shipped CLI:
 - `transform-generate-image-with-transloadit` (prompt -> image)
 - `transform-encode-hls-video-with-transloadit` (mp4 -> HLS)
 - `integrate-uppy-transloadit-s3-uploading-to-nextjs` (Next.js + Uppy + Transloadit, optional S3)
-- `integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs` (Next.js + Smart CDN signing)
+- `integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs` (Next.js + Smart CDN signing)
 
 ## Builtin Discovery
 

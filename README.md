@@ -8,12 +8,12 @@ This repo is compatible with the `skills` installer CLI (https://skills.sh/).
 
 Browse what’s available:
 ```bash
-npx -y skills add . --list --full-depth
+npx -y skills add ./skills --list
 ```
 
 Install into this project (or use `-g` for user-level):
 ```bash
-npx -y skills add . --all
+npx -y skills add ./skills --all
 ```
 
 Manual option (symlink the `skills/` catalog into your agent’s skill directory):
@@ -22,6 +22,8 @@ ln -s /ABS/PATH/TO/THIS/REPO/skills ~/.codex/skills
 ln -s /ABS/PATH/TO/THIS/REPO/skills ~/.claude/skills
 ln -s /ABS/PATH/TO/THIS/REPO/skills ~/.gemini/skills
 ```
+
+Note: this repo also contains developer-only skills under `.ai/` for working on this repo. The public catalog lives under `skills/`.
 
 ## Scenarios
 
@@ -67,7 +69,7 @@ Skill discovery is `SKILL.md`-based, so it’s fine for `_starter-projects/` and
 8. `_scripts/try-skill.ts` must load repo root `.env` and pass secrets to child processes via process environment (do not write `.env.local` into run dirs).
 9. `_scripts/try-skill.ts` must run Codex fully autonomously inside the run dir, inject the selected skill content into the prompt, and instruct “no commits, only file changes”. Use `--dangerously-bypass-approvals-and-sandbox` so the agent can actually write files and run `npm` on the host filesystem (Codex sandbox can be too restrictive outside trusted git repos).
 10. `_scripts/try-skill.ts` must capture all agent output to a transcript file and record wall time, and it must redact any secret values found in `.env` from saved transcripts.
-11. Run the trial: `node --experimental-strip-types _scripts/try-skill.ts --skill integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs --starter-project nextjs16`
+11. Run the trial: `node --experimental-strip-types _scripts/try-skill.ts --skill integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs --starter-project nextjs16`
 12. The script must validate automatically in the run dir by running `npm ci` and `npm run test:e2e`.
 13. If tests fail, or the diff looks wrong, or the agent got stuck repeatedly, or runtime is too long: update the skill (dense + prescriptive), then rerun step 11.
 14. If a high-level assumption was wrong (starter layout, test harness, env loading): update this section in `README.md`, then rerun step 11.

@@ -14,7 +14,7 @@ Concrete entry points:
 2. `transform-generate-image-with-transloadit`
 3. `transform-encode-hls-video-with-transloadit`
 4. `integrate-uppy-transloadit-s3-uploading-to-nextjs`
-5. `integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs`
+5. `integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs`
 
 # CLI Baseline (Recommended)
 

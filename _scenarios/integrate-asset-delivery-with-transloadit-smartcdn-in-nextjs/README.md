@@ -1,4 +1,4 @@
-# integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs
+# integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs
 
 Integration scenario: Next.js (App Router) + Transloadit Smart CDN signing.
 
@@ -31,4 +31,3 @@ npm run dev
 ```bash
 npm run test:e2e
 ```
-

@@ -1,5 +1,5 @@
 ---
-name: integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs
+name: integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs
 description: Add Transloadit Smart CDN URL signing to a Next.js App Router project (server-side signing route + optional client demo page).
 ---
 
@@ -115,4 +115,4 @@ export default function SmartCdnDemo() {
 
 # References (Internal)
 
-- Working reference implementation: `_scenarios/integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs`
+- Working reference implementation: `_scenarios/integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs`
