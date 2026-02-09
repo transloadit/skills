@@ -192,7 +192,7 @@ Example steps:
 Then create a template and set `TRANSLOADIT_TEMPLATE_ID`:
 
 ```bash
-npx -y @transloadit/node@4.7.0 templates create uppy-nextjs-resize-to-s3 ./steps.json -j
+npx -y @transloadit/node templates create uppy-nextjs-resize-to-s3 ./steps.json -j
 ```
 
 # References (Internal)

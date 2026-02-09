@@ -6,7 +6,7 @@ description: One-off image generation (prompt -> image file) using Transloadit v
 # Discover The Builtin Template ID
 
 ```bash
-npx -y @transloadit/node@4.7.0 templates list --include-builtin exclusively-latest --fields id,name --json
+npx -y @transloadit/node templates list --include-builtin exclusively-latest --fields id,name --json
 ```
 
 Pick the `builtin/generate-image@...` id from the output.
@@ -20,7 +20,7 @@ Versioning note:
 Do not use `--watch` for inputless templates.
 
 ```bash
-npx -y @transloadit/node@4.7.0 assemblies create \
+npx -y @transloadit/node assemblies create \
   --template builtin/generate-image@latest \
   -f prompt='A minimal product photo of a chameleon on white background' \
   -o ./out/ \
@@ -30,9 +30,8 @@ npx -y @transloadit/node@4.7.0 assemblies create \
 # Debug If It Fails
 
 ```bash
-npx -y @transloadit/node@4.7.0 assemblies get <assemblyIdOrUrl> -j
+npx -y @transloadit/node assemblies get <assemblyIdOrUrl> -j
 ```
 
 Notes:
 - Some generator/AI robots can be account-gated; if the assembly fails with capability/availability errors, switch templates or confirm the feature is enabled for your account.
-

@@ -6,7 +6,7 @@ description: Offline lookup for Transloadit Robots and their parameter docs/exam
 # Search Robots (Offline)
 
 ```bash
-npx -y @transloadit/node@4.7.0 docs robots list --search import --limit 10 -j
+npx -y @transloadit/node docs robots list --search import --limit 10 -j
 ```
 
 Output shape:
@@ -14,11 +14,9 @@ Output shape:
 
 # Get Full Robot Docs (Offline)
 
-Comma-separated and/or variadic:
+Comma-separated:
 ```bash
-npx -y @transloadit/node@4.7.0 docs robots get /http/import -j
-npx -y @transloadit/node@4.7.0 docs robots get /http/import,/image/resize -j
-npx -y @transloadit/node@4.7.0 docs robots get /http/import /image/resize -j
+npx -y @transloadit/node docs robots get /http/import,/image/resize -j
 ```
 
 Output shape + error contract:
@@ -29,4 +27,3 @@ Output shape + error contract:
 
 - Robot names map to: `steps.<stepName>.robot` (example: `"/image/resize"`)
 - Param docs map to: `steps.<stepName>.<paramName>` keys.
-

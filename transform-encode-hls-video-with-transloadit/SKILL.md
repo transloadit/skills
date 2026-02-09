@@ -6,7 +6,7 @@ description: One-off HLS encoding (local video -> HLS renditions + playlist) usi
 # Discover The Builtin Template ID
 
 ```bash
-npx -y @transloadit/node@4.7.0 templates list --include-builtin exclusively-latest --fields id,name --json
+npx -y @transloadit/node templates list --include-builtin exclusively-latest --fields id,name --json
 ```
 
 Pick the `builtin/encode-hls-video@...` id from the output.
@@ -18,7 +18,7 @@ Versioning note:
 # Run (Local Input Video)
 
 ```bash
-npx -y @transloadit/node@4.7.0 assemblies create \
+npx -y @transloadit/node assemblies create \
   --template builtin/encode-hls-video@latest \
   -i ./input.mp4 \
   -o ./out/ \
@@ -28,6 +28,5 @@ npx -y @transloadit/node@4.7.0 assemblies create \
 # Debug If It Fails
 
 ```bash
-npx -y @transloadit/node@4.7.0 assemblies get <assemblyIdOrUrl> -j
+npx -y @transloadit/node assemblies get <assemblyIdOrUrl> -j
 ```
-

@@ -24,7 +24,7 @@ This repository assumes `@transloadit/node >= 4.7.0` for:
 
 Builtin template discovery (token-efficient NDJSON):
 ```bash
-npx -y @transloadit/node@4.7.0 templates list --include-builtin exclusively-latest --fields id,name --json
+npx -y @transloadit/node templates list --include-builtin exclusively-latest --fields id,name --json
 ```
 
 Versioning note:
