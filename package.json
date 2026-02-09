@@ -10,7 +10,8 @@
     "lint:ts": "yarn lint:ts:scripts && yarn lint:ts:starter && yarn lint:ts:scenarios",
     "lint:js": "biome check --css-parse-tailwind-directives=true .",
     "fix:js": "biome check --write --css-parse-tailwind-directives=true .",
-    "check": "yarn lint:ts && yarn fix:js"
+    "check": "yarn lint:ts && yarn fix:js",
+    "ci": "yarn lint:ts && yarn lint:js"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.14",

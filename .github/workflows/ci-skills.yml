@@ -28,8 +28,11 @@ jobs:
       - name: Install root deps
         run: yarn install --immutable
 
-      - name: Yarn check
-        run: yarn check
+      - name: Lint TS
+        run: yarn lint:ts
+
+      - name: Lint/Format Check
+        run: yarn lint:js
 
   e2e:
     runs-on: ubuntu-latest
