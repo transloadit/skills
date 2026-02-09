@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+
+node_modules/
+.next/
+dist/
+.turbo/
+.cache/
+
+playwright-report/
+test-results/
+.vitest/
+
+_starter-projects/_runs/
+.yarn/

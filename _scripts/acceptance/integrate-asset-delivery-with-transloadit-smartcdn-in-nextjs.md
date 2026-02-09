@@ -1,0 +1,2 @@
+- E2E must load `/smartcdn`, read `[data-testid="smartcdn-json"]`, parse JSON, and assert it contains a `url` string.
+- The `url` should look signed (do not snapshot secrets; just assert it contains signature-ish markers like `~` or query params).

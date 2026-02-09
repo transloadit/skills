@@ -1,0 +1,3 @@
+- E2E must actually upload a small PNG via the Uppy Dashboard file input and wait for at least one Transloadit result (no mocks).
+- Add a tiny fixture file at `test/fixtures/1x1.png` and upload it using Playwright `setInputFiles`.
+- Render Transloadit results JSON in `[data-testid="results-json"]` and assert the `resized` step exists (and optionally `exported` when configured).

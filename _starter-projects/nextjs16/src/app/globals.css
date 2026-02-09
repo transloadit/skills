@@ -5,12 +5,12 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --primary: #FED835;
+  --primary: #fed835;
   --secondary: #304fff;
 
   --primary-accent: #e5c230;
   --foreground-accent: #454545;
-  --hero-background: #F3F3F5;
+  --hero-background: #f3f3f5;
 }
 
 html {
@@ -19,7 +19,7 @@ html {
 
 body {
   @apply text-lg;
-  
+
   color: var(--foreground);
   background: var(--background);
   font-family: "Source Sans 3", sans-serif;
@@ -39,7 +39,12 @@ body {
   font-style: normal;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: "Manrope", sans-serif;
   font-optical-sizing: auto;
   font-style: normal;

@@ -1,28 +1,28 @@
-import { NextResponse } from 'next/server'
-import { Transloadit } from '@transloadit/node'
-import { ensureTransloaditEnv, formatExpiresUtc, getRequiredEnv } from '@/lib/transloadit-env'
+import { signParamsSync } from '@transloadit/utils/node';
+import { NextResponse } from 'next/server';
+import { ensureTransloaditEnv, formatExpiresUtc, getRequiredEnv } from '@/lib/transloadit-env';
 
-export const runtime = 'nodejs'
+export const runtime = 'nodejs';
 
 export async function POST() {
   try {
-    ensureTransloaditEnv()
+    ensureTransloaditEnv();
 
-    const authKey = getRequiredEnv('TRANSLOADIT_KEY')
-    const authSecret = getRequiredEnv('TRANSLOADIT_SECRET')
+    const authKey = getRequiredEnv('TRANSLOADIT_KEY');
+    const authSecret = getRequiredEnv('TRANSLOADIT_SECRET');
 
-    const templateId = process.env.TRANSLOADIT_TEMPLATE_ID
-    const expires = formatExpiresUtc(30)
+    const templateId = process.env.TRANSLOADIT_TEMPLATE_ID;
+    const expires = formatExpiresUtc(30);
 
     const params: Record<string, unknown> = {
       auth: {
         key: authKey,
         expires,
       },
-    }
+    };
 
     if (templateId) {
-      params.template_id = templateId
+      params.template_id = templateId;
     } else {
       // Minimal "known good" steps so the demo works without pre-provisioning a template.
       params.steps = {
@@ -31,16 +31,16 @@ export async function POST() {
           use: ':original',
           width: 320,
         },
-      }
+      };
     }
 
-    const tl = new Transloadit({ authKey, authSecret })
-    const signed = tl.calcSignature(params)
+    const paramsString = JSON.stringify(params);
+    const signature = signParamsSync(paramsString, authSecret);
 
     // Uppy expects `{ params: <string|object>, signature: <string> }`.
-    return NextResponse.json({ params: signed.params, signature: signed.signature })
+    return NextResponse.json({ params: paramsString, signature });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error'
-    return NextResponse.json({ error: message }, { status: 500 })
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

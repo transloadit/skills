@@ -11,7 +11,7 @@
     "test:e2e": "vitest run -c vitest.e2e.config.ts"
   },
   "dependencies": {
-    "@transloadit/node": "^4.5.1",
+    "@transloadit/utils": "^4.3.0",
     "@uppy/core": "^5.2.0",
     "@uppy/dashboard": "^5.1.1",
     "@uppy/transloadit": "^5.5.0",

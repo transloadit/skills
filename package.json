@@ -1,0 +1,22 @@
+{
+  "name": "transloadit-skills",
+  "private": true,
+  "type": "module",
+  "packageManager": "yarn@4.5.0",
+  "scripts": {
+    "lint:ts:scripts": "tsgo -p tsconfig.json --noEmit && echo 'TypeScript linting (_scripts) complete'",
+    "lint:ts:starter": "bash -lc 'cd _starter-projects/nextjs16 && test -d node_modules || npm ci --no-audit --no-fund && ../../node_modules/.bin/tsgo -p tsconfig.json --noEmit' && echo 'TypeScript linting (_starter-projects) complete'",
+    "lint:ts:scenarios": "bash -lc 'set -euo pipefail; for d in _scenarios/*; do test -f \"$d/tsconfig.json\" || continue; (cd \"$d\" && test -d node_modules || npm ci --no-audit --no-fund && ../../node_modules/.bin/tsgo -p tsconfig.json --noEmit); done' && echo 'TypeScript linting (_scenarios) complete'",
+    "lint:ts": "yarn lint:ts:scripts && yarn lint:ts:starter && yarn lint:ts:scenarios",
+    "lint:js": "biome check --css-parse-tailwind-directives=true .",
+    "fix:js": "biome check --write --css-parse-tailwind-directives=true .",
+    "check": "yarn lint:ts && yarn fix:js",
+    "ci": "yarn lint:ts && yarn lint:js"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.14",
+    "@types/node": "^24.10.3",
+    "@typescript/native-preview": "^7.0.0-dev.20260124.1",
+    "typescript": "^5.9.3"
+  }
+}
