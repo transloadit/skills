@@ -3,26 +3,15 @@ const cp = require('node:child_process')
 const fsSync = require('node:fs')
 const fs = require('node:fs/promises')
 const path = require('node:path')
+const util = require('node:util')
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms))
 }
 
-function parseArgs(argv) {
-  const out = {}
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i]
-    if (!a.startsWith('--')) continue
-    const key = a.slice(2)
-    const next = argv[i + 1]
-    if (next == null || next.startsWith('--')) {
-      out[key] = true
-    } else {
-      out[key] = next
-      i++
-    }
-  }
-  return out
+function usageAndExit(code) {
+  console.error('Usage: node --experimental-strip-types _scripts/try-skill.ts --skill <name> --starter-project <name>')
+  process.exit(code)
 }
 
 function sanitizeSegment(s) {
@@ -138,14 +127,41 @@ async function appendMarker(ws, text) {
   await sleep(5)
 }
 
+async function runStep({ ws, label, cwd, cmd, args, env }) {
+  const start = Date.now()
+  await appendMarker(ws, label)
+  const exitCode = await spawnAndTee({ cwd, ws, cmd, args, env })
+  const wallTimeMs = Date.now() - start
+  return { exitCode, wallTimeMs }
+}
+
+async function loadAcceptance({ repoRoot, skill }) {
+  const acceptancePath = path.join(repoRoot, '_scripts', 'acceptance', `${skill}.md`)
+  if (!(await exists(acceptancePath))) return { acceptancePath: null, lines: [] }
+
+  const content = await fs.readFile(acceptancePath, 'utf8')
+  const lines = content
+    .split(/\r?\n/)
+    .map((l) => l.trimEnd())
+    .filter((l) => l.trim() !== '')
+  return { acceptancePath, lines }
+}
+
 async function main() {
-  const args = parseArgs(process.argv.slice(2))
-  const skill = args.skill
-  const starter = args['starter-project']
-  if (!skill || !starter) {
-    console.error('Usage: node --experimental-strip-types _scripts/try-skill.ts --skill <name> --starter-project <name>')
-    process.exit(2)
-  }
+  const parsed = util.parseArgs({
+    args: process.argv.slice(2),
+    options: {
+      skill: { type: 'string' },
+      'starter-project': { type: 'string' },
+      help: { type: 'boolean' },
+    },
+    allowPositionals: true,
+  })
+  if (parsed.values.help) usageAndExit(0)
+
+  const skill = parsed.values.skill
+  const starter = parsed.values['starter-project']
+  if (!skill || !starter) usageAndExit(2)
 
   const repoRoot = path.resolve(__dirname, '..')
   const starterDir = path.join(repoRoot, '_starter-projects', starter)
@@ -176,16 +192,7 @@ async function main() {
   const summaryPath = path.join(runDir, 'try-skill.summary.json')
   const diffStatPath = path.join(runDir, 'try-skill.diff.stat.txt')
 
-  const acceptance = []
-  if (skill === 'integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs') {
-    acceptance.push('- E2E must load `/smartcdn`, read `[data-testid="smartcdn-json"]`, parse JSON, and assert it contains a `url` string.')
-    acceptance.push('- The `url` should look signed (do not snapshot secrets; just assert it contains signature-ish markers like `~` or query params).')
-  }
-  if (skill === 'integrate-uppy-transloadit-s3-uploading-to-nextjs') {
-    acceptance.push('- E2E must actually upload a small PNG via the Uppy Dashboard file input and wait for at least one Transloadit result (no mocks).')
-    acceptance.push('- Add a tiny fixture file at `test/fixtures/1x1.png` and upload it using Playwright `setInputFiles`.')
-    acceptance.push('- Render Transloadit results JSON in `[data-testid="results-json"]` and assert the `resized` step exists (and optionally `exported` when configured).')
-  }
+  const acceptance = await loadAcceptance({ repoRoot, skill })
 
   const prompt = [
     'You are operating inside a single Next.js project directory.',
@@ -213,7 +220,14 @@ async function main() {
     '- Add `vitest.e2e.config.ts` with `testTimeout`/`hookTimeout` and `include: [\"test/e2e/**/*.test.ts\"]`.',
     '- Put tests under `test/e2e/` and start Next in the test (spawn `next dev` on a free port, wait for readiness, then drive via Playwright).',
     '- Read `TRANSLOADIT_*` from `process.env` (do not depend on `.env.local` or `dotenv` for the harness).',
-    ...(acceptance.length > 0 ? ['','Skill-specific E2E acceptance criteria:', ...acceptance] : []),
+    ...(acceptance.lines.length > 0
+      ? [
+          '',
+          'Skill-specific E2E acceptance criteria:',
+          ...acceptance.lines,
+          ...(acceptance.acceptancePath ? [`(source: ${path.relative(repoRoot, acceptance.acceptancePath)})`] : []),
+        ]
+      : []),
     '',
     'Skill content follows. Use it as the primary playbook:',
     '```md',
@@ -243,17 +257,15 @@ async function main() {
 
   const ws = fsSync.createWriteStream(transcriptPath, { flags: 'a' })
 
-  const startCodex = Date.now()
-  await appendMarker(ws, 'CODEX START')
-  const codexExitCode = await spawnAndTee({
-    cwd: repoRoot,
+  const codex = await runStep({
     ws,
+    label: 'CODEX START',
+    cwd: repoRoot,
     cmd,
     args: cmdArgs,
     env: childEnv,
   })
   await appendMarker(ws, 'CODEX END')
-  const codexMs = Date.now() - startCodex
 
   // Diff stat (best-effort). Do this before validation so `.next/` doesn't churn during diff.
   try {
@@ -270,11 +282,10 @@ async function main() {
   }
 
   // Validation (runs in the mutated project dir).
-  const startCi = Date.now()
-  await appendMarker(ws, 'VALIDATE: npm ci')
-  const npmCiExitCode = await spawnAndTee({
-    cwd: runDir,
+  const npmCi = await runStep({
     ws,
+    label: 'VALIDATE: npm ci',
+    cwd: runDir,
     cmd: 'npm',
     args: ['ci', '--no-audit', '--no-fund'],
     env: {
@@ -282,13 +293,11 @@ async function main() {
       NEXT_TELEMETRY_DISABLED: '1',
     },
   })
-  const npmCiMs = Date.now() - startCi
 
-  const startE2e = Date.now()
-  await appendMarker(ws, 'VALIDATE: npm run test:e2e')
-  const e2eExitCode = await spawnAndTee({
-    cwd: runDir,
+  const e2e = await runStep({
     ws,
+    label: 'VALIDATE: npm run test:e2e',
+    cwd: runDir,
     cmd: 'npm',
     args: ['run', 'test:e2e'],
     env: {
@@ -296,7 +305,6 @@ async function main() {
       NEXT_TELEMETRY_DISABLED: '1',
     },
   })
-  const e2eMs = Date.now() - startE2e
 
   await new Promise((resolve) => ws.end(resolve))
 
@@ -313,22 +321,22 @@ async function main() {
     diffStatPath: (await exists(diffStatPath)) ? diffStatPath : null,
     startedAt,
     endedAt: new Date().toISOString(),
-    codex: { exitCode: codexExitCode, wallTimeMs: codexMs },
+    codex: { exitCode: codex.exitCode, wallTimeMs: codex.wallTimeMs },
     validate: {
-      npmCi: { exitCode: npmCiExitCode, wallTimeMs: npmCiMs },
-      e2e: { exitCode: e2eExitCode, wallTimeMs: e2eMs },
+      npmCi,
+      e2e,
     },
   }
   await fs.writeFile(summaryPath, JSON.stringify(summary, null, 2) + '\n', 'utf8')
 
-  console.log(`Codex exit code: ${codexExitCode}`)
-  console.log(`Codex wall time (ms): ${codexMs}`)
-  console.log(`npm ci exit code: ${npmCiExitCode} (ms: ${npmCiMs})`)
-  console.log(`npm run test:e2e exit code: ${e2eExitCode} (ms: ${e2eMs})`)
+  console.log(`Codex exit code: ${codex.exitCode}`)
+  console.log(`Codex wall time (ms): ${codex.wallTimeMs}`)
+  console.log(`npm ci exit code: ${npmCi.exitCode} (ms: ${npmCi.wallTimeMs})`)
+  console.log(`npm run test:e2e exit code: ${e2e.exitCode} (ms: ${e2e.wallTimeMs})`)
   console.log(`Summary: ${summaryPath}`)
   if (summary.diffStatPath) console.log(`Diff stat: ${summary.diffStatPath}`)
 
-  process.exit(codexExitCode || npmCiExitCode || e2eExitCode ? 1 : 0)
+  process.exit(codex.exitCode || npmCi.exitCode || e2e.exitCode ? 1 : 0)
 }
 
 main().catch((err) => {
