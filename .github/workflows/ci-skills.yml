@@ -1,4 +1,4 @@
-name: Scenarios
+name: CI Skills
 
 on:
   push:
