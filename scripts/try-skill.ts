@@ -4,6 +4,10 @@ const fsSync = require('node:fs')
 const fs = require('node:fs/promises')
 const path = require('node:path')
 
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms))
+}
+
 function parseArgs(argv) {
   const out = {}
   for (let i = 0; i < argv.length; i++) {
@@ -92,6 +96,25 @@ async function writeEnvLocal({ repoRoot, runDir }) {
   return { wrote: true, keys: lines.map((l) => l.split('=')[0]) }
 }
 
+function spawnAndTee({ cwd, ws, cmd, args, env }) {
+  return new Promise((resolve) => {
+    const child = cp.spawn(cmd, args, {
+      cwd,
+      env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    child.stdout.pipe(ws, { end: false })
+    child.stderr.pipe(ws, { end: false })
+    child.on('close', (code) => resolve(code ?? 1))
+  })
+}
+
+async function appendMarker(ws, text) {
+  ws.write(`\n===== ${text} =====\n`)
+  // Let piping flush so markers don't interleave with output too badly.
+  await sleep(5)
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2))
   const skill = args.skill
@@ -116,6 +139,7 @@ async function main() {
   const skillBody = await fs.readFile(skillPath, 'utf8')
 
   const iso = new Date().toISOString().replace(/[:.]/g, '-')
+  const startedAt = new Date().toISOString()
   const runRoot = path.join(repoRoot, 'starter-projects', '_runs', starter)
   const runDirName = `${iso}-${sanitizeSegment(skill)}`
   const runDir = path.join(runRoot, runDirName)
@@ -125,6 +149,8 @@ async function main() {
 
   const transcriptPath = path.join(runDir, 'codex.transcript.jsonl')
   const lastMsgPath = path.join(runDir, 'codex.last-message.txt')
+  const summaryPath = path.join(runDir, 'try-skill.summary.json')
+  const diffStatPath = path.join(runDir, 'try-skill.diff.stat.txt')
 
   const prompt = [
     'You are operating inside a single Next.js project directory.',
@@ -136,6 +162,10 @@ async function main() {
     envWrite.wrote
       ? `Env: .env.local is present (keys: ${envWrite.keys.join(', ')}).`
       : 'Env: .env.local was not written (repo root .env missing or no keys found).',
+    '',
+    'Operational requirements:',
+    '- Ensure `npm run test:e2e` exists and passes.',
+    '- If Playwright is used, make sure the Chromium browser is installed (via `playwright install chromium`, a `pretest:e2e`, or similar).',
     '',
     'Skill content follows. Use it as the primary playbook:',
     '```md',
@@ -163,33 +193,90 @@ async function main() {
   console.log(`Run dir: ${runDir}`)
   console.log(`Transcript: ${transcriptPath}`)
 
-  const start = Date.now()
-  const child = cp.spawn(cmd, cmdArgs, {
-    cwd: repoRoot,
-    env: { ...process.env },
-    stdio: ['ignore', 'pipe', 'pipe'],
-  })
-
   const ws = fsSync.createWriteStream(transcriptPath, { flags: 'a' })
-  child.stdout.pipe(ws)
-  child.stderr.pipe(ws)
 
-  const code = await new Promise((resolve) => {
-    child.on('close', (c) => resolve(c ?? 1))
+  const startCodex = Date.now()
+  await appendMarker(ws, 'CODEX START')
+  const codexExitCode = await spawnAndTee({
+    cwd: repoRoot,
+    ws,
+    cmd,
+    args: cmdArgs,
+    env: { ...process.env },
   })
+  await appendMarker(ws, 'CODEX END')
+  const codexMs = Date.now() - startCodex
+
+  // Diff stat (best-effort). Do this before validation so `.next/` doesn't churn during diff.
+  try {
+    await appendMarker(ws, 'DIFF STAT (starter -> run)')
+    const diffStat = cp.execFileSync('git', ['diff', '--no-index', '--stat', starterDir, runDir], {
+      encoding: 'utf8',
+      cwd: repoRoot,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    await fs.writeFile(diffStatPath, diffStat, 'utf8')
+    ws.write(diffStat + '\n')
+  } catch {
+    // ignore
+  }
+
+  // Validation (runs in the mutated project dir).
+  const startCi = Date.now()
+  await appendMarker(ws, 'VALIDATE: npm ci')
+  const npmCiExitCode = await spawnAndTee({
+    cwd: runDir,
+    ws,
+    cmd: 'npm',
+    args: ['ci', '--no-audit', '--no-fund'],
+    env: {
+      ...process.env,
+      NEXT_TELEMETRY_DISABLED: '1',
+    },
+  })
+  const npmCiMs = Date.now() - startCi
+
+  const startE2e = Date.now()
+  await appendMarker(ws, 'VALIDATE: npm run test:e2e')
+  const e2eExitCode = await spawnAndTee({
+    cwd: runDir,
+    ws,
+    cmd: 'npm',
+    args: ['run', 'test:e2e'],
+    env: {
+      ...process.env,
+      NEXT_TELEMETRY_DISABLED: '1',
+    },
+  })
+  const e2eMs = Date.now() - startE2e
 
   ws.end()
-  const durMs = Date.now() - start
 
-  console.log(`Codex exit code: ${code}`)
-  console.log(`Wall time (ms): ${durMs}`)
-  console.log('Next steps (manual):')
-  console.log(`  cd ${runDir}`)
-  console.log('  npm ci')
-  console.log('  npx playwright install chromium')
-  console.log('  npm run test:e2e')
+  const summary = {
+    skill,
+    starterProject: starter,
+    runDir,
+    transcriptPath,
+    lastMsgPath,
+    diffStatPath: (await exists(diffStatPath)) ? diffStatPath : null,
+    startedAt,
+    endedAt: new Date().toISOString(),
+    codex: { exitCode: codexExitCode, wallTimeMs: codexMs },
+    validate: {
+      npmCi: { exitCode: npmCiExitCode, wallTimeMs: npmCiMs },
+      e2e: { exitCode: e2eExitCode, wallTimeMs: e2eMs },
+    },
+  }
+  await fs.writeFile(summaryPath, JSON.stringify(summary, null, 2) + '\n', 'utf8')
 
-  process.exit(code)
+  console.log(`Codex exit code: ${codexExitCode}`)
+  console.log(`Codex wall time (ms): ${codexMs}`)
+  console.log(`npm ci exit code: ${npmCiExitCode} (ms: ${npmCiMs})`)
+  console.log(`npm run test:e2e exit code: ${e2eExitCode} (ms: ${e2eMs})`)
+  console.log(`Summary: ${summaryPath}`)
+  if (summary.diffStatPath) console.log(`Diff stat: ${summary.diffStatPath}`)
+
+  process.exit(codexExitCode || npmCiExitCode || e2eExitCode ? 1 : 0)
 }
 
 main().catch((err) => {
