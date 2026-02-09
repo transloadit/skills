@@ -23,7 +23,7 @@ ln -s /ABS/PATH/TO/THIS/REPO/skills ~/.claude/skills
 ln -s /ABS/PATH/TO/THIS/REPO/skills ~/.gemini/skills
 ```
 
-Note: this repo also contains developer-only skills under `.ai/` for working on this repo. The public catalog lives under `skills/`.
+Note: this repo also contains developer-only skills under `.ai/dev-skills/` for working on this repo. The public catalog lives under `skills/`.
 
 ## Scenarios
 
