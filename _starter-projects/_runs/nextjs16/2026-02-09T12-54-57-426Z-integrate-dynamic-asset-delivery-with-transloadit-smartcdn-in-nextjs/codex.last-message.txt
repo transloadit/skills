@@ -1,7 +1,0 @@
-`npm run test:e2e` now passes.
-
-Changes made (per skill):
-- `package.json`: added `@transloadit/node`, `vitest`, `playwright`, `dotenv`; added `test:e2e` and `pretest:e2e` scripts.
-- `src/app/api/smartcdn/route.ts`: server-side Smart CDN signed URL JSON endpoint.
-- `src/app/smartcdn/page.tsx` and `src/app/smartcdn/smartcdn-demo.tsx`: demo page that fetches `/api/smartcdn` and renders payload.
-- `vitest.e2e.config.ts`, `test/e2e/env.ts`, `test/e2e/smartcdn.test.ts`: Vitest+Playwright E2E that boots `next dev`, loads `.env.local`, and asserts the returned Smart CDN URL includes a signature param.

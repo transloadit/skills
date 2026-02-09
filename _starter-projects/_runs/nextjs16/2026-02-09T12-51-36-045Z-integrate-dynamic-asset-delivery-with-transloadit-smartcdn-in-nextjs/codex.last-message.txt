@@ -1,1 +1,0 @@
-Updating `package.json` to add the `test:e2e` script, then installing the required deps (`@transloadit/node`, `vitest`, `playwright`, `dotenv`) and the Chromium browser for Playwright.
