@@ -7,7 +7,7 @@ description: Main entry-point skill for Transloadit. Route to the right `integra
 
 1. Need reference (robot params/examples, no API calls): `docs-transloadit-robots`
 2. Need a one-off transform (download outputs locally): `transform-*`
-3. Need an end-to-end code integration (scenario-grade, with E2E): `integrate-*`
+3. Need an end-to-end code integration (real app integration steps): `integrate-*`
 
 Concrete entry points:
 1. `docs-transloadit-robots`
@@ -16,11 +16,15 @@ Concrete entry points:
 4. `integrate-uppy-transloadit-s3-uploading-to-nextjs`
 5. `integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs`
 
-# Baseline CLI (Recommended)
+# CLI Baseline (Recommended)
 
-This repository assumes `@transloadit/node >= 4.7.0` for:
-- `docs robots ...` (offline robot metadata)
-- `templates list --include-builtin ...` (builtin template discovery)
+Most skills in this repo prefer using the `@transloadit/node` CLI via:
+
+```bash
+npx -y @transloadit/node ...
+```
+
+If a command errors with "Unsupported option name" or a missing subcommand, update to a newer `@transloadit/node`.
 
 Builtin template discovery (token-efficient NDJSON):
 ```bash

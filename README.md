@@ -2,6 +2,27 @@
 
 This repo hosts agent skills for Transloadit.
 
+## Install / Use
+
+This repo is compatible with the `skills` installer CLI (https://skills.sh/).
+
+Browse what’s available:
+```bash
+npx -y skills add . --list --full-depth
+```
+
+Install into this project (or use `-g` for user-level):
+```bash
+npx -y skills add . --all
+```
+
+Manual option (symlink the `skills/` catalog into your agent’s skill directory):
+```bash
+ln -s /ABS/PATH/TO/THIS/REPO/skills ~/.codex/skills
+ln -s /ABS/PATH/TO/THIS/REPO/skills ~/.claude/skills
+ln -s /ABS/PATH/TO/THIS/REPO/skills ~/.gemini/skills
+```
+
 ## Scenarios
 
 `_scenarios/` is for integration scenarios that can later be distilled into agent skills.
@@ -18,9 +39,21 @@ Conventions:
 - Secrets are read from env vars. Do not commit `.env*` files.
 - Prefer `npx -y @transloadit/node ...` for any Transloadit-side operations (template creation, linting, robot docs).
 
+## Add A Skill
+
+1. Create `skills/<skill-name>/SKILL.md` with tight scope and a runnable checklist.
+2. If it’s an integration, create a matching `_scenarios/<skill-name>/` reference implementation and validate it with an E2E test.
+3. Keep test-harness specifics out of the skill. The skill should read like guidance for a normal production app.
+
 ## Notes
 
-Codex treats a directory as a skill only if it contains a `SKILL.md` file (with the skill frontmatter). This is why `_starter-projects/` can live next to skill folders without being picked up as a skill.
+Repository layout:
+- `skills/`: skill catalog (`skills/<name>/SKILL.md`)
+- `_scenarios/`: runnable reference implementations (E2E-validated)
+- `_scripts/`: internal harness tooling (not a skill)
+- `_starter-projects/`: starter templates used by the harness (not a skill)
+
+Skill discovery is `SKILL.md`-based, so it’s fine for `_starter-projects/` and `_scenarios/` to be siblings of `skills/` without being interpreted as skills.
 
 ## Try-Skill Harness
 

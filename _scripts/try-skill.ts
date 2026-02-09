@@ -170,9 +170,24 @@ async function main() {
     process.exit(2)
   }
 
-  const skillPath = path.join(repoRoot, skill, 'SKILL.md')
-  if (!(await exists(skillPath))) {
-    console.error(`Skill not found: ${skillPath}`)
+  const skillPathCandidates = [
+    // Preferred: repo-local skill catalog layout (Cloudflare-style).
+    path.join(repoRoot, 'skills', skill, 'SKILL.md'),
+    // Legacy: skill folders at repo root.
+    path.join(repoRoot, skill, 'SKILL.md'),
+    // Also allow agent-local install dir (this repo symlinks `.codex/skills` -> `.ai/skills` -> `../skills`).
+    path.join(repoRoot, '.ai', 'skills', skill, 'SKILL.md'),
+  ]
+
+  let skillPath = null
+  for (const candidate of skillPathCandidates) {
+    if (await exists(candidate)) {
+      skillPath = candidate
+      break
+    }
+  }
+  if (!skillPath) {
+    console.error(`Skill not found. Tried:\n${skillPathCandidates.map((p) => `- ${p}`).join('\n')}`)
     process.exit(2)
   }
   const skillBody = await fs.readFile(skillPath, 'utf8')

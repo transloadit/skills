@@ -8,7 +8,7 @@ Goal: a small, reliable set of skills that map directly to the shipped CLI:
 
 - `docs-*`: offline reference lookups (no API calls)
 - `transform-*`: one-off transforms (CLI driven, outputs downloaded via `-o`)
-- `integrate-*`: runnable, end-to-end integrations (scenarios + Playwright/Vitest E2E)
+- `integrate-*`: real-world integration guides (validated via `_scenarios/` + E2E, but not requiring any test harness)
 
 ## Current Skill Set
 
@@ -19,13 +19,9 @@ Goal: a small, reliable set of skills that map directly to the shipped CLI:
 - `integrate-uppy-transloadit-s3-uploading-to-nextjs` (Next.js + Uppy + Transloadit, optional S3)
 - `integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs` (Next.js + Smart CDN signing)
 
-## Version Baseline
+## Builtin Discovery
 
-Use `@transloadit/node >= 4.7.0` for:
-- `docs robots ...`
-- `templates list --include-builtin ...`
-
-Builtin discovery (token-efficient NDJSON):
+Builtin discovery (token-efficient NDJSON, good for agents):
 ```bash
 npx -y @transloadit/node templates list --include-builtin exclusively-latest --fields id,name --json
 ```
