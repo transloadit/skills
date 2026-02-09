@@ -11,3 +11,5 @@ dist/
 playwright-report/
 test-results/
 .vitest/
+
+starter-projects/_runs/
