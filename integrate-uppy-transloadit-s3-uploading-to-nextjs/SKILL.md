@@ -9,12 +9,12 @@ description: Add Uppy Dashboard + Transloadit uploads to a Next.js (App Router) 
 
 1. Search robots:
 ```bash
-npx -y @transloadit/node docs robots list --search import --limit 10 -j
+npx -y @transloadit/node@4.7.0 docs robots list --search import --limit 10 -j
 ```
 
 2. Fetch details/examples for chosen robots:
 ```bash
-npx -y @transloadit/node docs robots get /http/import,/image/resize,/s3/store -j
+npx -y @transloadit/node@4.7.0 docs robots get /http/import,/image/resize,/s3/store -j
 ```
 
 ## Build Assembly Steps
@@ -25,7 +25,7 @@ npx -y @transloadit/node docs robots get /http/import,/image/resize,/s3/store -j
 
 Lint before running:
 ```bash
-npx -y @transloadit/node assemblies lint --steps scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-only.json --json
+npx -y @transloadit/node@4.7.0 assemblies lint --steps scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-only.json --json
 ```
 
 ## Implement Next.js Integration (Golden Path)
@@ -49,7 +49,7 @@ Use the scenario code as the reference implementation:
 1. Create Template Credentials in Transloadit (recommended). Use the credential name in `/s3/store` as `"credentials"`.
 2. Create a template from the provided steps JSON:
 ```bash
-npx -y @transloadit/node templates create uppy-nextjs-resize-to-s3 scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-to-s3.json -j
+npx -y @transloadit/node@4.7.0 templates create uppy-nextjs-resize-to-s3 scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-to-s3.json -j
 ```
 3. Configure env:
 - `TRANSLOADIT_TEMPLATE_ID=<template id>`
