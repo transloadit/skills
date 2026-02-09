@@ -1,5 +1,5 @@
 {
-  "name": "add-uppy-transloadit-s3-uploading-to-nextjs",
+  "name": "integrate-uppy-transloadit-s3-uploading-to-nextjs",
   "version": "0.1.0",
   "private": true,
   "scripts": {

@@ -1,5 +1,5 @@
 ---
-name: dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs
+name: integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs
 description: Implement dynamic asset delivery in Next.js using Transloadit Smart CDN signed URLs, with a runnable Playwright+Vitest E2E proof. Use when adding server-side signing, integrating signed URLs into a Next.js UI, or debugging Smart CDN signature generation and caching behavior.
 ---
 
@@ -8,7 +8,7 @@ description: Implement dynamic asset delivery in Next.js using Transloadit Smart
 ## Generate Signed Smart CDN URLs Server-Side
 
 Use the scenario route handler as the baseline implementation:
-- `scenarios/dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs/src/app/api/smartcdn/route.ts`
+- `scenarios/integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs/src/app/api/smartcdn/route.ts`
 
 Notes:
 - Keep signing on the server (never expose `TRANSLOADIT_SECRET` to the browser).
@@ -28,7 +28,7 @@ This scenario reads:
 
 Run the scenario E2E:
 ```bash
-cd scenarios/dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs
+cd scenarios/integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs
 npm ci
 npm run test:e2e
 ```
@@ -41,4 +41,3 @@ Generate a signed Smart CDN URL from stdin:
 ```bash
 printf '%s' '{"workspace":"<ws>","template":"<tpl>","input":"<file>"}' | npx -y @transloadit/node auth smart-cdn
 ```
-

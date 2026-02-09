@@ -1,6 +1,6 @@
-# add-uppy-transloadit-s3-uploading-to-nextjs
+# integrate-uppy-transloadit-s3-uploading-to-nextjs
 
-Integration experiment: Next.js (App Router) + Uppy + Transloadit.
+Integration scenario: Next.js (App Router) + Uppy + Transloadit.
 
 What it proves:
 - Browser upload via Uppy Dashboard
@@ -18,7 +18,7 @@ Optional:
 - `TRANSLOADIT_TEMPLATE_ID`
 - `TRANSLOADIT_EXPECT_S3=1` (if your template includes an `/s3/store` step named `exported`)
 
-This experiment will load `../../.env` automatically as a local-only convenience. Real apps should use their own `.env.local` and normal Next.js env loading.
+This scenario will load `../../.env` automatically as a local-only convenience. Real apps should use their own `.env.local` and normal Next.js env loading.
 
 ## Run
 

@@ -14,8 +14,8 @@ jobs:
       fail-fast: false
       matrix:
         scenario:
-          - add-uppy-transloadit-s3-uploading-to-nextjs
-          - dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs
+          - integrate-uppy-transloadit-s3-uploading-to-nextjs
+          - integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs
     defaults:
       run:
         shell: bash
