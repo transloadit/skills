@@ -10,6 +10,26 @@ permissions:
   contents: read
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install root deps
+        run: yarn install --immutable
+
+      - name: Yarn check
+        run: yarn check
+
   e2e:
     runs-on: ubuntu-latest
     strategy:

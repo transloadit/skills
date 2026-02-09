@@ -13,3 +13,4 @@ test-results/
 .vitest/
 
 _starter-projects/_runs/
+.yarn/
