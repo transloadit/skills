@@ -19,7 +19,7 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: scenarios/${{ matrix.scenario }}
+        working-directory: _scenarios/${{ matrix.scenario }}
 
     env:
       TRUSTED: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: scenarios/${{ matrix.scenario }}/package-lock.json
+          cache-dependency-path: _scenarios/${{ matrix.scenario }}/package-lock.json
 
       - name: Install deps
         run: npm ci

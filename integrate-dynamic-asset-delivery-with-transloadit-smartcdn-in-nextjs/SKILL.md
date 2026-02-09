@@ -115,5 +115,4 @@ export default function SmartCdnDemo() {
 
 # References (Internal)
 
-- Working reference implementation: `scenarios/integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs`
-
+- Working reference implementation: `_scenarios/integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs`

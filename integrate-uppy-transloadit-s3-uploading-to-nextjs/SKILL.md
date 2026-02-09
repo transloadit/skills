@@ -197,5 +197,5 @@ npx -y @transloadit/node templates create uppy-nextjs-resize-to-s3 ./steps.json 
 
 # References (Internal)
 
-- Working reference implementation: `scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs`
-- Proven steps JSON: `scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-only.json`, `scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-to-s3.json`
+- Working reference implementation: `_scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs`
+- Proven steps JSON: `_scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-only.json`, `_scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-to-s3.json`

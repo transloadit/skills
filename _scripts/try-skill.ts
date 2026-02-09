@@ -143,12 +143,12 @@ async function main() {
   const skill = args.skill
   const starter = args['starter-project']
   if (!skill || !starter) {
-    console.error('Usage: node --experimental-strip-types scripts/try-skill.ts --skill <name> --starter-project <name>')
+    console.error('Usage: node --experimental-strip-types _scripts/try-skill.ts --skill <name> --starter-project <name>')
     process.exit(2)
   }
 
   const repoRoot = path.resolve(__dirname, '..')
-  const starterDir = path.join(repoRoot, 'starter-projects', starter)
+  const starterDir = path.join(repoRoot, '_starter-projects', starter)
   if (!(await exists(starterDir))) {
     console.error(`Starter project not found: ${starterDir}`)
     process.exit(2)
@@ -163,7 +163,7 @@ async function main() {
 
   const iso = new Date().toISOString().replace(/[:.]/g, '-')
   const startedAt = new Date().toISOString()
-  const runRoot = path.join(repoRoot, 'starter-projects', '_runs', starter)
+  const runRoot = path.join(repoRoot, '_starter-projects', '_runs', starter)
   const runDirName = `${iso}-${sanitizeSegment(skill)}`
   const runDir = path.join(runRoot, runDirName)
 
