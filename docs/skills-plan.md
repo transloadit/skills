@@ -1,113 +1,155 @@
-# Transloadit Agent Skills Plan
+# Transloadit Agent Skills Plan (Focused)
 
-## Goals
+The goal is a small set of narrow, reliable skills that map 1:1 to the shipped Transloadit CLI:
 
-- Provide a lightweight, skills-based way for agents to use Transloadit without bespoke MCP plumbing.
-- Package repeatable, high-quality workflows and integration guidance as portable skills.
-- Keep skills composable and low-context via progressive disclosure and optional resources.
+`npx -y @transloadit/node …` (runs the `transloadit` CLI, reads `.env` via `dotenv/config`)
 
-## Principles
+This keeps skills deterministic: the agent decides "what to do", but execution is done by the CLI.
 
-- Skills are local, human-in-the-loop, and repo-aware by default.
-- Prefer running `npx @transloadit/node` for actual processing when the skill needs to execute work.
-- Keep outputs short, copyable, and practical (JSON, code blocks, or a small checklist).
-- Avoid long-lived servers unless explicitly requested; skills should be usable offline.
+## Shared assumptions (all skills)
 
-## Top 3 launch skills (high value)
+- Credentials come from `TRANSLOADIT_KEY` and `TRANSLOADIT_SECRET` (loaded from `.env` automatically).
+- Prefer machine-readable output via `-j`/`--json` when the result is fed into other steps.
+- Prefer linting before live runs when assembling new instructions.
 
-These three skills maximize developer impact and showcase Transloadit clearly and fast.
+## Skill 0: Robot Docs (Offline)
 
-### 1) Transloadit Media Processing Assistant
+**Use when**
+- The agent needs to pick the right Robot(s), or needs parameter docs/examples to draft steps.
 
-**What it does**
-- Understands plain-language file processing requests and runs the right Transloadit pipeline.
-- Handles common jobs: resize, reformat, thumbnails, watermarks, video encode, audio normalize, PDF preview.
+**Key properties**
+- Offline metadata (no API calls).
+- `-j`/`--json` is token-efficient and stable to parse.
 
-**Why it matters**
-- Immediate utility. A user can ask for a conversion or thumbnail set and get results without writing code.
+**Execution**
+```bash
+# Search/browse robots (summary index)
+npx -y @transloadit/node docs robots list --search import --limit 10 -j
 
-**How it works**
-- Converts intent into assembly instructions (or selects a built-in template).
-- Runs processing via `npx @transloadit/node` and returns output URLs.
-- Uses linting before running to catch obvious mistakes.
+# Get full docs for one or more robots (comma-separated and/or variadic)
+npx -y @transloadit/node docs robots get /http/import -j
+npx -y @transloadit/node docs robots get /http/import,/image/resize -j
+npx -y @transloadit/node docs robots get /http/import /image/resize -j
+```
 
-**Example prompts**
-- "Convert this MOV to MP4 and generate a 500px thumbnail."
-- "Resize this image to 800x600 and add a small watermark."
+**JSON shapes**
+- `docs robots list -j` prints: `{ robots: [{ name, title?, summary, category? }], nextCursor? }`
+- `docs robots get -j` prints: `{ robots: [{ name, summary, requiredParams, optionalParams, examples? }], notFound: string[] }`
 
-**Outputs**
-- The assembly instructions used.
-- Result URLs and a short summary.
+**Error handling contract**
+- Exit code is `1` if anything is in `notFound`.
+- Still returns partial JSON results so the agent can proceed with what was found and only fix missing names.
 
----
+## Skill 1: Run An Assembly From Local Inputs
 
-### 2) Assembly Template Generator (Pipeline Builder)
+**Use when**
+- The user has local files and wants output artifacts (conversions, thumbnails, encodes, etc).
 
-**What it does**
-- Turns plain-language requirements into assembly instructions JSON.
-- Optionally proposes a template name and fields.
+**Agent inputs**
+- Input paths or a directory.
+- Either: a template (`template_id_or_name`) or a steps JSON file (`steps.json`).
+- Any template fields / instruction fields to set.
 
-**Why it matters**
-- Lowers the biggest onboarding hurdle: building the correct steps and parameters.
+**Execution**
+```bash
+# Template-driven
+npx -y @transloadit/node assemblies create --template <template> --input <path> --watch --json
 
-**How it works**
-- Uses a curated reference of common pipelines and robot parameters.
-- Produces JSON that can be pasted into Transloadit or used with SDKs.
-- Validates instructions via linting.
+# Steps-driven (file or stdin)
+npx -y @transloadit/node assemblies create --steps steps.json --input <path> --watch --json
+```
 
-**Example prompts**
-- "Create a template that makes 3 JPEG sizes (200, 800, 1200) and exports to S3."
-- "Build a pipeline that extracts the first page of a PDF and makes a preview PNG."
+**Output contract**
+- The exact command used.
+- The assembly URL/ID and the resulting URLs (from `--json` output).
 
-**Outputs**
-- Assembly instructions JSON.
-- A short explanation of steps and required fields.
+## Skill 2: Lint (And Optionally Fix) Assembly Instructions
 
----
+**Use when**
+- The user (or agent) has drafted steps JSON and wants validation before running.
 
-### 3) Developer Q and A + Integrations Helper
+**Agent inputs**
+- Steps JSON (path or stdin).
+- Optional: `--fix` and desired strictness (`--fatal`).
 
-**What it does**
-- Answers common Transloadit questions with code snippets and checklists.
-- Guides integration for Node, Uppy, webhooks, and general API usage.
+**Execution**
+```bash
+# Lint local file
+npx -y @transloadit/node assemblies lint --steps steps.json --json
 
-**Why it matters**
-- Removes documentation hunting and speeds up integration work.
+# Auto-fix (writes back to file)
+npx -y @transloadit/node assemblies lint --steps steps.json --fix --json
+```
 
-**How it works**
-- Uses curated references (docs and SDK readmes) from `references/`.
-- Produces concise answers with example code blocks.
+**Output contract**
+- The lint result (issues list).
+- If `--fix` was used: confirm whether the file changed and summarize what changed (high-level).
 
-**Example prompts**
-- "How do I verify webhook signatures in Node?"
-- "Show me a minimal Uppy + Transloadit setup."
+## Skill 3: Template CRUD + Sync
 
-**Outputs**
-- A short answer with a code block and a 2-3 step checklist.
+**Use when**
+- The user wants reusable pipelines (templates), or wants to keep local JSON in sync with API2 templates.
 
-## Initial reference assets
+**Agent inputs**
+- Operation: `list|get|create|modify|delete|sync`.
+- Local file(s) or directory (for `create/modify/sync`).
 
-- Transloadit Node SDK README
-- Uppy + Transloadit integration snippets
-- Robot parameter docs for common tasks (image resize, video encode, document convert)
-- Built-in template catalog (if available)
-- Webhook signature verification examples
+**Execution**
+```bash
+npx -y @transloadit/node templates list --json
+npx -y @transloadit/node templates get <templateId> --json
+npx -y @transloadit/node templates create <name> <file> --json
+npx -y @transloadit/node templates modify <templateId> <file> --json
+npx -y @transloadit/node templates sync <path> --recursive --json
+```
 
-## Rollout plan
+**Output contract**
+- For `create/modify/sync`: include the normalized steps JSON that was applied (from file content).
+- For `list/get`: return the minimal fields the user asked for (avoid dumping huge payloads).
 
-1) Create the three skill folders with tight `SKILL.md` instructions.
-2) Add minimal `references/` for each skill to keep context small.
-3) Validate the skills with real prompts and tighten output format.
-4) Expand based on feedback into domain-specific skills.
+## Skill 4: Assembly Debugging (Get, List, Replay, Cancel)
 
-## Future expansion
+**Use when**
+- The user has an assembly URL/ID and needs diagnosis, reprocessing, or cancellation.
 
-- Image processing specialization (face detection, background removal).
-- Video workflows (HLS packaging, multi-bitrate presets).
-- Ops and troubleshooting (auth, billing, cost estimation).
+**Agent inputs**
+- Assembly IDs/URLs.
+- For replay: optional overrides (fields, steps, notify URL).
 
-## Open questions
+**Execution**
+```bash
+npx -y @transloadit/node assemblies get <assemblyIdOrUrl> --json
+npx -y @transloadit/node assemblies list --keywords foo --json
+npx -y @transloadit/node assemblies replay <assemblyIdOrUrl> --json
+npx -y @transloadit/node assemblies delete <assemblyIdOrUrl> --json
+```
 
-- Repo name and governance for public release.
-- Versioning strategy for skills.
-- How to keep references up-to-date without heavy maintenance.
+**Output contract**
+- Clear diagnosis summary: what failed, where, and the next actionable step.
+- If replayed: confirm the replay request was accepted, then follow up with `assemblies get` to show the new state.
+
+## Skill 5: Auth Utilities (Signature + Smart CDN)
+
+**Use when**
+- The user is integrating Transloadit and needs signatures or signed Smart CDN URLs.
+
+**Agent inputs**
+- The payload to sign (or Smart CDN URL parameters).
+
+**Execution**
+```bash
+# Signature: reads JSON params from stdin (or empty stdin for a minimal payload)
+printf '%s' '{"auth":{"expires":"2026/12/31 23:59:59+00:00"}}' | npx -y @transloadit/node auth signature
+
+# Smart CDN: reads JSON params from stdin
+printf '%s' '{"workspace":"<ws>","template":"<tpl>","input":"<file>"}' | npx -y @transloadit/node auth smart-cdn
+```
+
+**Output contract**
+- Return the computed signature or signed URL, plus a minimal integration note (where to plug it in).
+
+## Notes: Versioning / Fallback
+
+If the published `@transloadit/node` version used by `npx` does not yet include `docs robots …`, use one of:
+- Local dev (monorepo): `node ~/code/node-sdk/packages/node/dist/cli.js docs robots … -j`
+- MCP fallback: `@transloadit/mcp-server` exposes `transloadit_list_robots` and `transloadit_get_robot_help`

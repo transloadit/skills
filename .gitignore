@@ -1,1 +1,13 @@
 .env
+.env.*
+!.env.example
+
+node_modules/
+.next/
+dist/
+.turbo/
+.cache/
+
+playwright-report/
+test-results/
+.vitest/

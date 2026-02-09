@@ -1,0 +1,46 @@
+name: Scenarios
+
+on:
+  push:
+    branches:
+      - main
+      - mcp3
+  pull_request:
+
+jobs:
+  e2e:
+    # Never run repo secrets for forked PRs (secrets are not exposed anyway, but we also avoid failures).
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario:
+          - add-uppy-transloadit-s3-uploading-to-nextjs
+          - dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs
+    defaults:
+      run:
+        shell: bash
+        working-directory: scenarios/${{ matrix.scenario }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: scenarios/${{ matrix.scenario }}/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Playwright (chromium)
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E
+        env:
+          TRANSLOADIT_KEY: ${{ secrets.TRANSLOADIT_KEY }}
+          TRANSLOADIT_SECRET: ${{ secrets.TRANSLOADIT_SECRET }}
+        run: npm run test:e2e
+
