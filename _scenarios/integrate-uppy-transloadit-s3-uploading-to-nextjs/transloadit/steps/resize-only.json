@@ -1,0 +1,8 @@
+{
+  "resized": {
+    "robot": "/image/resize",
+    "use": ":original",
+    "width": 320
+  }
+}
+

@@ -1,0 +1,15 @@
+{
+  "resized": {
+    "robot": "/image/resize",
+    "use": ":original",
+    "width": 320
+  },
+  "exported": {
+    "robot": "/s3/store",
+    "use": "resized",
+    "credentials": "YOUR_AWS_CREDENTIALS",
+    "path": "uppy-nextjs/${unique_prefix}/${file.url_name}",
+    "acl": "public-read"
+  }
+}
+
