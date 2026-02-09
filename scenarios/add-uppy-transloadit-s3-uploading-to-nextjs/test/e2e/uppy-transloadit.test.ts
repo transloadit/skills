@@ -45,8 +45,6 @@ describe('Uppy + Transloadit (Next.js) E2E', () => {
           env: {
             ...process.env,
             NEXT_TELEMETRY_DISABLED: '1',
-            // Make the test independent from any pre-provisioned template.
-            TRANSLOADIT_TEMPLATE_ID: '',
           },
           // Avoid filling up stdio buffers and deadlocking the test runner.
           stdio: ['ignore', 'pipe', 'pipe'],
@@ -127,9 +125,11 @@ describe('Uppy + Transloadit (Next.js) E2E', () => {
       expect(jsonText).toBeTruthy()
       const parsed = JSON.parse(jsonText as string) as Record<string, unknown>
 
-      // Our fallback assembly uses a step named "resized".
-      expect(Array.isArray(parsed.resized)).toBe(true)
-      const first = (parsed.resized as unknown[])[0] as Record<string, unknown>
+      const expectS3 = process.env.TRANSLOADIT_EXPECT_S3 === '1'
+      const stepName = expectS3 ? 'exported' : 'resized'
+
+      expect(Array.isArray(parsed[stepName])).toBe(true)
+      const first = (parsed[stepName] as unknown[])[0] as Record<string, unknown>
       expect(typeof first.ssl_url === 'string' || typeof first.url === 'string').toBe(true)
     } finally {
       await page.close()

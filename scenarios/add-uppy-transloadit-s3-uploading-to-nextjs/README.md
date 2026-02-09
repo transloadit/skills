@@ -16,6 +16,7 @@ Required:
 
 Optional:
 - `TRANSLOADIT_TEMPLATE_ID`
+- `TRANSLOADIT_EXPECT_S3=1` (if your template includes an `/s3/store` step named `exported`)
 
 This experiment will load `../../.env` automatically as a local-only convenience. Real apps should use their own `.env.local` and normal Next.js env loading.
 
@@ -50,4 +51,3 @@ If your published `@transloadit/node` does not yet include `docs robots …`, yo
 node ~/code/node-sdk/packages/node/dist/cli.js docs robots list --search s3 --limit 10 -j
 node ~/code/node-sdk/packages/node/dist/cli.js docs robots get /s3/store,/image/resize -j
 ```
-
