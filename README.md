@@ -47,6 +47,30 @@ Conventions:
 2. If it’s an integration, create a matching `_scenarios/<skill-name>/` reference implementation and validate it with an E2E test.
 3. Keep test-harness specifics out of the skill. The skill should read like guidance for a normal production app.
 
+## Skill Catalog
+
+Categories:
+- `docs-*`: offline reference lookups (no API calls)
+- `transform-*`: one-off transforms (CLI driven, outputs downloaded via `-o`)
+- `integrate-*`: real-world integration guides (validated via `_scenarios/` + E2E, but not requiring any test harness)
+
+Current skills:
+- `transloadit` (router)
+- `docs-transloadit-robots`
+- `transform-generate-image-with-transloadit`
+- `transform-encode-hls-video-with-transloadit`
+- `integrate-uppy-transloadit-s3-uploading-to-nextjs`
+- `integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs`
+
+Builtin template discovery (token-efficient NDJSON, good for agents):
+```bash
+npx -y @transloadit/node templates list --include-builtin exclusively-latest --fields id,name --json
+```
+
+Builtins versioning note:
+- Skills/docs use `builtin/<name>@latest` as the stable contract.
+- If `@latest` is not supported yet in your API2, use the concrete builtin version returned by the list output (example: `@0.0.1`).
+
 ## Notes
 
 Repository layout:
