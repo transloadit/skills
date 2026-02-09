@@ -72,28 +72,51 @@ function parseDotenv(content) {
   return env
 }
 
-async function writeEnvLocal({ repoRoot, runDir }) {
+function shouldRedactKey(k) {
+  // Keep simple and conservative: redact anything ending in these tokens.
+  return /(SECRET|TOKEN|PASSWORD|KEY)$/i.test(String(k))
+}
+
+async function loadEnvOverlayFromRepoDotenv(repoRoot) {
   const envPath = path.join(repoRoot, '.env')
-  if (!(await exists(envPath))) return { wrote: false, keys: [] }
+  if (!(await exists(envPath))) {
+    return { overlay: {}, redactValues: [], keys: [] }
+  }
 
   const content = await fs.readFile(envPath, 'utf8')
   const env = parseDotenv(content)
-  const keys = [
-    'TRANSLOADIT_KEY',
-    'TRANSLOADIT_SECRET',
-    'TRANSLOADIT_SMARTCDN_WORKSPACE',
-    'TRANSLOADIT_SMARTCDN_TEMPLATE',
-    'TRANSLOADIT_SMARTCDN_INPUT',
-  ]
 
-  const lines = []
-  for (const k of keys) {
-    if (env[k] != null && env[k] !== '') lines.push(`${k}=${env[k]}`)
+  // Only forward the Transloadit-related variables into the trial processes
+  // to reduce accidental secret exposure.
+  const overlay = {}
+  for (const [k, v] of Object.entries(env)) {
+    if (!k.startsWith('TRANSLOADIT_')) continue
+    if (v == null || v === '') continue
+    overlay[k] = v
   }
-  if (lines.length === 0) return { wrote: false, keys: [] }
 
-  await fs.writeFile(path.join(runDir, '.env.local'), lines.join('\n') + '\n', 'utf8')
-  return { wrote: true, keys: lines.map((l) => l.split('=')[0]) }
+  const keys = Object.keys(overlay).sort()
+  const redactValues = []
+  for (const k of keys) {
+    if (!shouldRedactKey(k)) continue
+    const v = overlay[k]
+    if (typeof v === 'string' && v) redactValues.push(v)
+  }
+
+  return { overlay, redactValues, keys }
+}
+
+async function redactFileInPlace(filePath, redactValues) {
+  if (!redactValues || redactValues.length === 0) return
+  if (!(await exists(filePath))) return
+
+  let content = await fs.readFile(filePath, 'utf8')
+  for (const secret of redactValues) {
+    if (!secret) continue
+    // Exact-value replacement (fast + avoids accidental regex pitfalls).
+    content = content.split(secret).join('REDACTED')
+  }
+  await fs.writeFile(filePath, content, 'utf8')
 }
 
 function spawnAndTee({ cwd, ws, cmd, args, env }) {
@@ -145,27 +168,52 @@ async function main() {
   const runDir = path.join(runRoot, runDirName)
 
   await copyDir(starterDir, runDir)
-  const envWrite = await writeEnvLocal({ repoRoot, runDir })
+  const envOverlay = await loadEnvOverlayFromRepoDotenv(repoRoot)
+  const childEnv = { ...process.env, ...envOverlay.overlay }
 
   const transcriptPath = path.join(runDir, 'codex.transcript.jsonl')
   const lastMsgPath = path.join(runDir, 'codex.last-message.txt')
   const summaryPath = path.join(runDir, 'try-skill.summary.json')
   const diffStatPath = path.join(runDir, 'try-skill.diff.stat.txt')
 
+  const acceptance = []
+  if (skill === 'integrate-dynamic-asset-delivery-with-transloadit-smartcdn-in-nextjs') {
+    acceptance.push('- E2E must load `/smartcdn`, read `[data-testid="smartcdn-json"]`, parse JSON, and assert it contains a `url` string.')
+    acceptance.push('- The `url` should look signed (do not snapshot secrets; just assert it contains signature-ish markers like `~` or query params).')
+  }
+  if (skill === 'integrate-uppy-transloadit-s3-uploading-to-nextjs') {
+    acceptance.push('- E2E must actually upload a small PNG via the Uppy Dashboard file input and wait for at least one Transloadit result (no mocks).')
+    acceptance.push('- Add a tiny fixture file at `test/fixtures/1x1.png` and upload it using Playwright `setInputFiles`.')
+    acceptance.push('- Render Transloadit results JSON in `[data-testid="results-json"]` and assert the `resized` step exists (and optionally `exported` when configured).')
+  }
+
   const prompt = [
     'You are operating inside a single Next.js project directory.',
-    'Goal: apply the provided skill to this project and make `npm run test:e2e` pass.',
+    'Goal: apply the provided skill to this project.',
+    'Internal harness requirement: make `npm run test:e2e` pass (the harness will run it after you finish).',
     'Constraints:',
     '- Do not run `git commit` and do not create new git history.',
     '- Only change files inside this project directory.',
     '- Prefer npm (not pnpm/yarn/bun).',
-    envWrite.wrote
-      ? `Env: .env.local is present (keys: ${envWrite.keys.join(', ')}).`
-      : 'Env: .env.local was not written (repo root .env missing or no keys found).',
+    envOverlay.keys.length > 0
+      ? `Env: TRANSLOADIT_* env vars are set in the process environment (${envOverlay.keys.length} keys).`
+      : 'Env: No TRANSLOADIT_* keys were loaded from repo root .env. If required, expect the harness environment to provide them.',
+    'Security:',
+    '- Do not print secrets or environment variables.',
+    "- Do not `cat` `.env*` files or run `env`/`printenv`.",
     '',
     'Operational requirements:',
     '- Ensure `npm run test:e2e` exists and passes.',
     '- If Playwright is used, make sure the Chromium browser is installed (via `playwright install chromium`, a `pretest:e2e`, or similar).',
+    '',
+    'Internal E2E harness defaults (keep it minimal and portable):',
+    '- Use Vitest + Playwright (Chromium).',
+    '- Add `scripts.test:e2e` = `vitest run -c vitest.e2e.config.ts`.',
+    '- Add a `pretest:e2e` that installs Chromium if needed: `playwright install chromium`.',
+    '- Add `vitest.e2e.config.ts` with `testTimeout`/`hookTimeout` and `include: [\"test/e2e/**/*.test.ts\"]`.',
+    '- Put tests under `test/e2e/` and start Next in the test (spawn `next dev` on a free port, wait for readiness, then drive via Playwright).',
+    '- Read `TRANSLOADIT_*` from `process.env` (do not depend on `.env.local` or `dotenv` for the harness).',
+    ...(acceptance.length > 0 ? ['','Skill-specific E2E acceptance criteria:', ...acceptance] : []),
     '',
     'Skill content follows. Use it as the primary playbook:',
     '```md',
@@ -202,7 +250,7 @@ async function main() {
     ws,
     cmd,
     args: cmdArgs,
-    env: { ...process.env },
+    env: childEnv,
   })
   await appendMarker(ws, 'CODEX END')
   const codexMs = Date.now() - startCodex
@@ -230,7 +278,7 @@ async function main() {
     cmd: 'npm',
     args: ['ci', '--no-audit', '--no-fund'],
     env: {
-      ...process.env,
+      ...childEnv,
       NEXT_TELEMETRY_DISABLED: '1',
     },
   })
@@ -244,13 +292,17 @@ async function main() {
     cmd: 'npm',
     args: ['run', 'test:e2e'],
     env: {
-      ...process.env,
+      ...childEnv,
       NEXT_TELEMETRY_DISABLED: '1',
     },
   })
   const e2eMs = Date.now() - startE2e
 
-  ws.end()
+  await new Promise((resolve) => ws.end(resolve))
+
+  // Redact secrets from captured outputs (best-effort).
+  await redactFileInPlace(transcriptPath, envOverlay.redactValues)
+  await redactFileInPlace(lastMsgPath, envOverlay.redactValues)
 
   const summary = {
     skill,
