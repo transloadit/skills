@@ -9,8 +9,6 @@ on:
 
 jobs:
   e2e:
-    # Never run repo secrets for forked PRs (secrets are not exposed anyway, but we also avoid failures).
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -22,6 +20,9 @@ jobs:
       run:
         shell: bash
         working-directory: scenarios/${{ matrix.scenario }}
+
+    env:
+      TRUSTED: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
 
     steps:
       - uses: actions/checkout@v4
@@ -35,10 +36,16 @@ jobs:
       - name: Install deps
         run: npm ci
 
+      - name: Build (fork PRs)
+        if: env.TRUSTED != 'true'
+        run: npm run build
+
       - name: Install Playwright (chromium)
+        if: env.TRUSTED == 'true'
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E
+        if: env.TRUSTED == 'true'
         env:
           TRANSLOADIT_KEY: ${{ secrets.TRANSLOADIT_KEY }}
           TRANSLOADIT_SECRET: ${{ secrets.TRANSLOADIT_SECRET }}
