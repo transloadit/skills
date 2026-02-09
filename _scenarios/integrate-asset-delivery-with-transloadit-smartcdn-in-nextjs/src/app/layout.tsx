@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
-import "./globals.css";
+import type { Metadata } from 'next';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Smart CDN (Next.js)",
-  description: "Scenario: Smart CDN signing in Next.js",
+  title: 'Smart CDN (Next.js)',
+  description: 'Scenario: Smart CDN signing in Next.js',
 };
 
 export default function RootLayout({

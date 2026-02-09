@@ -1,21 +1,21 @@
-'use client'
+'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import Uppy from '@uppy/core'
-import Dashboard from '@uppy/dashboard'
-import Transloadit, { type AssemblyOptions } from '@uppy/transloadit'
+import Uppy from '@uppy/core';
+import Dashboard from '@uppy/dashboard';
+import Transloadit, { type AssemblyOptions } from '@uppy/transloadit';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 export default function UploadDemo() {
-  const dashboardEl = useRef<HTMLDivElement | null>(null)
-  const [lastAssembly, setLastAssembly] = useState<unknown>(null)
-  const [results, setResults] = useState<unknown>(null)
-  const [uploadPct, setUploadPct] = useState<number>(0)
+  const dashboardEl = useRef<HTMLDivElement | null>(null);
+  const [lastAssembly, setLastAssembly] = useState<unknown>(null);
+  const [results, setResults] = useState<unknown>(null);
+  const [uploadPct, setUploadPct] = useState<number>(0);
 
   const uppy = useMemo(() => {
     const instance = new Uppy({
       autoProceed: true,
       restrictions: { maxNumberOfFiles: 1 },
-    })
+    });
 
     instance.use(Transloadit, {
       waitForEncoding: true,
@@ -25,19 +25,19 @@ export default function UploadDemo() {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({}),
-        })
+        });
         if (!res.ok) {
-          throw new Error(`Failed to get assembly options: ${res.status}`)
+          throw new Error(`Failed to get assembly options: ${res.status}`);
         }
-        return (await res.json()) as AssemblyOptions
+        return (await res.json()) as AssemblyOptions;
       },
-    })
+    });
 
-    return instance
-  }, [])
+    return instance;
+  }, []);
 
   useEffect(() => {
-    if (!dashboardEl.current) return
+    if (!dashboardEl.current) return;
 
     uppy.use(Dashboard, {
       target: dashboardEl.current,
@@ -46,40 +46,43 @@ export default function UploadDemo() {
       hideUploadButton: true,
       hideProgressDetails: false,
       height: 350,
-    })
+    });
 
-    const onAssembly = (assembly: unknown) => setLastAssembly(assembly)
+    const onAssembly = (assembly: unknown) => setLastAssembly(assembly);
     const onResult = (stepName: string, result: unknown) =>
       setResults((prev: unknown) => {
         const base: Record<string, unknown> =
-          typeof prev === 'object' && prev !== null ? { ...(prev as Record<string, unknown>) } : {}
-        const existing = base[stepName]
-        base[stepName] = Array.isArray(existing) ? existing.concat([result]) : [result]
-        return base
-      })
-    const onUploadProgress = (_file: unknown, progress: { bytesUploaded: number; bytesTotal: number | null }) => {
-      if (!progress?.bytesTotal) return
-      const pct = Math.round((progress.bytesUploaded / progress.bytesTotal) * 100)
-      setUploadPct(pct)
-    }
+          typeof prev === 'object' && prev !== null ? { ...(prev as Record<string, unknown>) } : {};
+        const existing = base[stepName];
+        base[stepName] = Array.isArray(existing) ? existing.concat([result]) : [result];
+        return base;
+      });
+    const onUploadProgress = (
+      _file: unknown,
+      progress: { bytesUploaded: number; bytesTotal: number | null },
+    ) => {
+      if (!progress?.bytesTotal) return;
+      const pct = Math.round((progress.bytesUploaded / progress.bytesTotal) * 100);
+      setUploadPct(pct);
+    };
     const onComplete = () => {
       // noop; DOM already has results state
-    }
+    };
 
-    uppy.on('transloadit:assembly-created', onAssembly)
-    uppy.on('transloadit:result', onResult)
-    uppy.on('transloadit:complete', onComplete)
-    uppy.on('upload-progress', onUploadProgress)
+    uppy.on('transloadit:assembly-created', onAssembly);
+    uppy.on('transloadit:result', onResult);
+    uppy.on('transloadit:complete', onComplete);
+    uppy.on('upload-progress', onUploadProgress);
 
     return () => {
-      uppy.off('transloadit:assembly-created', onAssembly)
-      uppy.off('transloadit:result', onResult)
-      uppy.off('transloadit:complete', onComplete)
-      uppy.off('upload-progress', onUploadProgress)
-      uppy.getPlugin('Dashboard')?.uninstall()
-      uppy.destroy()
-    }
-  }, [uppy])
+      uppy.off('transloadit:assembly-created', onAssembly);
+      uppy.off('transloadit:result', onResult);
+      uppy.off('transloadit:complete', onComplete);
+      uppy.off('upload-progress', onUploadProgress);
+      uppy.getPlugin('Dashboard')?.uninstall();
+      uppy.destroy();
+    };
+  }, [uppy]);
 
   return (
     <section className="grid gap-6 md:grid-cols-2">
@@ -118,5 +121,5 @@ export default function UploadDemo() {
         </div>
       </div>
     </section>
-  )
+  );
 }

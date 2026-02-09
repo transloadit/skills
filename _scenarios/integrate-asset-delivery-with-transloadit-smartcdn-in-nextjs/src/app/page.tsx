@@ -1,4 +1,4 @@
-import SmartCdnDemo from './smartcdn-demo'
+import SmartCdnDemo from './smartcdn-demo';
 
 export default function Home() {
   return (
@@ -11,6 +11,5 @@ export default function Home() {
         <SmartCdnDemo />
       </div>
     </main>
-  )
+  );
 }
-

@@ -3,15 +3,18 @@
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "files": {
     "includes": [
-      "README.md",
-      "package.json",
-      "tsconfig.json",
-      "biome.json",
-      ".yarnrc.yml",
-      "_scripts/**",
-      "skills/**",
-      ".github/**",
-      "docs/**"
+      "**",
+      "!**/.git",
+      "!**/.yarn",
+      "!**/node_modules",
+      "!**/.next",
+      "!**/dist",
+      "!**/.turbo",
+      "!**/.cache",
+      "!**/playwright-report",
+      "!**/test-results",
+      "!**/.vitest",
+      "!_starter-projects/_runs"
     ]
   },
   "linter": {
@@ -31,5 +34,11 @@
     "formatter": {
       "quoteStyle": "single"
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["_scenarios/**", "_starter-projects/**"],
+      "linter": { "enabled": false }
+    }
+  ]
 }

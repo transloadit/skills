@@ -1,4 +1,4 @@
-import UploadDemo from "./upload-demo";
+import UploadDemo from './upload-demo';
 
 export default function Home() {
   return (

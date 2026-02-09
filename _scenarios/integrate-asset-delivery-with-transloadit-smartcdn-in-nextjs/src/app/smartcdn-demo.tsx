@@ -1,24 +1,24 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
 
 export default function SmartCdnDemo() {
-  const [payload, setPayload] = useState<unknown>(null)
+  const [payload, setPayload] = useState<unknown>(null);
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
     fetch('/api/smartcdn', { cache: 'no-store' })
       .then(async (res) => {
-        const json = await res.json()
-        if (!cancelled) setPayload(json)
+        const json = await res.json();
+        if (!cancelled) setPayload(json);
       })
       .catch((err) => {
-        if (!cancelled) setPayload({ error: String(err) })
-      })
+        if (!cancelled) setPayload({ error: String(err) });
+      });
     return () => {
-      cancelled = true
-    }
-  }, [])
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <pre
@@ -27,6 +27,5 @@ export default function SmartCdnDemo() {
     >
       {payload ? JSON.stringify(payload, null, 2) : '(loading)'}
     </pre>
-  )
+  );
 }
-
