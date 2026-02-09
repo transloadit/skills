@@ -13,7 +13,7 @@ For local dev, put these in `.env.local`. Never expose `TRANSLOADIT_SECRET` to t
 # Install
 
 ```bash
-npm i @transloadit/node
+npm i @transloadit/utils
 ```
 
 # Implement (App Router)
@@ -28,7 +28,7 @@ Create `app/api/smartcdn/route.ts`:
 
 ```ts
 import { NextResponse } from 'next/server'
-import { Transloadit } from '@transloadit/node'
+import { getSignedSmartCdnUrl } from '@transloadit/utils/node'
 
 export const runtime = 'nodejs'
 
@@ -47,8 +47,7 @@ export async function GET() {
     const template = process.env.TRANSLOADIT_SMARTCDN_TEMPLATE || 'serve-preview'
     const input = process.env.TRANSLOADIT_SMARTCDN_INPUT || 'example.jpg'
 
-    const tl = new Transloadit({ authKey, authSecret })
-    const url = tl.getSignedSmartCDNUrl({ workspace, template, input })
+    const url = getSignedSmartCdnUrl({ workspace, template, input, authKey, authSecret })
 
     return NextResponse.json({ url, workspace, template, input })
   } catch (err) {
@@ -115,4 +114,9 @@ export default function SmartCdnDemo() {
 
 # References (Internal)
 
-- Working reference implementation: `_scenarios/integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs`
+- Working reference implementation: `https://github.com/transloadit/skills/tree/main/_scenarios/integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs`
+
+Tested with (see the scenario lockfile for the exact versions):
+- Next.js 16.1.6 (App Router)
+- React 19.2.3
+- @transloadit/utils 4.3.0 (Smart CDN signing)

@@ -13,7 +13,7 @@ For local dev, put these in `.env.local`. Never expose `TRANSLOADIT_SECRET` to t
 # Install
 
 ```bash
-npm i @transloadit/node @uppy/core @uppy/dashboard @uppy/transloadit
+npm i @transloadit/utils @uppy/core @uppy/dashboard @uppy/transloadit
 ```
 
 # Implement (Golden Path)
@@ -28,7 +28,7 @@ Create `app/api/transloadit/assembly-options/route.ts`:
 
 ```ts
 import { NextResponse } from 'next/server'
-import { Transloadit } from '@transloadit/node'
+import { signParamsSync } from '@transloadit/utils/node'
 
 export const runtime = 'nodejs'
 
@@ -66,11 +66,11 @@ export async function POST() {
       }
     }
 
-    const tl = new Transloadit({ authKey, authSecret })
-    const signed = tl.calcSignature(params)
+    const paramsString = JSON.stringify(params)
+    const signature = signParamsSync(paramsString, authSecret)
 
     // Uppy expects `{ params: <string|object>, signature: <string> }`.
-    return NextResponse.json({ params: signed.params, signature: signed.signature })
+    return NextResponse.json({ params: paramsString, signature })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     return NextResponse.json({ error: message }, { status: 500 })
@@ -95,9 +95,7 @@ Create a client component like `app/upload-demo.tsx`:
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Uppy from '@uppy/core'
 import Dashboard from '@uppy/dashboard'
-import Transloadit from '@uppy/transloadit'
-
-type AssemblyOptions = { params?: unknown; signature?: string | null }
+import Transloadit, { type AssemblyOptions } from '@uppy/transloadit'
 
 export default function UploadDemo() {
   const dashboardEl = useRef<HTMLDivElement | null>(null)
@@ -131,12 +129,12 @@ export default function UploadDemo() {
       inline: true,
       proudlyDisplayPoweredByUppy: false,
       hideUploadButton: true,
-      showProgressDetails: true,
+      hideProgressDetails: false,
       height: 350,
     })
 
     const onResult = (stepName: string, result: unknown) =>
-      setResults((prev) => {
+      setResults((prev: unknown) => {
         const base: Record<string, unknown> =
           typeof prev === 'object' && prev !== null ? { ...(prev as Record<string, unknown>) } : {}
         const existing = base[stepName]
@@ -144,7 +142,7 @@ export default function UploadDemo() {
         return base
       })
 
-    const onUploadProgress = (_file: unknown, progress: { bytesUploaded: number; bytesTotal: number }) => {
+    const onUploadProgress = (_file: unknown, progress: { bytesUploaded: number; bytesTotal: number | null }) => {
       if (!progress?.bytesTotal) return
       setUploadPct(Math.round((progress.bytesUploaded / progress.bytesTotal) * 100))
     }
@@ -156,7 +154,7 @@ export default function UploadDemo() {
       uppy.off('transloadit:result', onResult)
       uppy.off('upload-progress', onUploadProgress)
       uppy.getPlugin('Dashboard')?.uninstall()
-      uppy.close({ reason: 'unmount' })
+      uppy.destroy()
     }
   }, [uppy])
 
@@ -199,5 +197,11 @@ npx -y @transloadit/node templates create uppy-nextjs-resize-to-s3 ./steps.json 
 
 # References (Internal)
 
-- Working reference implementation: `_scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs`
-- Proven steps JSON: `_scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-only.json`, `_scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-to-s3.json`
+- Working reference implementation: `https://github.com/transloadit/skills/tree/main/_scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs`
+- Proven steps JSON: `https://github.com/transloadit/skills/blob/main/_scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-only.json`, `https://github.com/transloadit/skills/blob/main/_scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-to-s3.json`
+
+Tested with (see the scenario lockfile for the exact versions):
+- Next.js 16.1.6 (App Router)
+- React 19.2.3
+- @transloadit/utils 4.3.0 (Assembly signing)
+- @uppy/core 5.2.0, @uppy/dashboard 5.1.1, @uppy/transloadit 5.5.0

@@ -30,7 +30,3 @@ Builtin template discovery (token-efficient NDJSON):
 ```bash
 npx -y @transloadit/node templates list --include-builtin exclusively-latest --fields id,name --json
 ```
-
-Versioning note:
-- Skills/docs use `builtin/<name>@latest` as the stable contract.
-- If `@latest` is not supported yet in your API2, use the concrete builtin version shown by the list output (example: `builtin/generate-image@0.0.1`).

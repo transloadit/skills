@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { Transloadit } from '@transloadit/node'
+import { signParamsSync } from '@transloadit/utils/node'
 import { ensureTransloaditEnv, formatExpiresUtc, getRequiredEnv } from '@/lib/transloadit-env'
 
 export const runtime = 'nodejs'
@@ -34,11 +34,11 @@ export async function POST() {
       }
     }
 
-    const tl = new Transloadit({ authKey, authSecret })
-    const signed = tl.calcSignature(params)
+    const paramsString = JSON.stringify(params)
+    const signature = signParamsSync(paramsString, authSecret)
 
     // Uppy expects `{ params: <string|object>, signature: <string> }`.
-    return NextResponse.json({ params: signed.params, signature: signed.signature })
+    return NextResponse.json({ params: paramsString, signature })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
     return NextResponse.json({ error: message }, { status: 500 })

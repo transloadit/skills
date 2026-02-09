@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { Transloadit } from '@transloadit/node'
+import { getSignedSmartCdnUrl } from '@transloadit/utils/node'
 import { ensureTransloaditEnv, getRequiredEnv } from '@/lib/transloadit-env'
 
 export const runtime = 'nodejs'
@@ -15,11 +15,12 @@ export async function GET() {
     const template = process.env.TRANSLOADIT_SMARTCDN_TEMPLATE || 'serve-preview'
     const input = process.env.TRANSLOADIT_SMARTCDN_INPUT || 'example.jpg'
 
-    const tl = new Transloadit({ authKey, authSecret })
-    const url = tl.getSignedSmartCDNUrl({
+    const url = getSignedSmartCdnUrl({
       workspace,
       template,
       input,
+      authKey,
+      authSecret,
     })
 
     return NextResponse.json({ url, workspace, template, input })
@@ -28,4 +29,3 @@ export async function GET() {
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
-

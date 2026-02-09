@@ -2,6 +2,8 @@
 
 This repo hosts agent skills for Transloadit.
 
+If you’re a developer/agent consuming this repo, start with the `transloadit` router skill and then jump into a specific `docs-*`, `transform-*`, or `integrate-*` skill.
+
 ## Install / Use
 
 This repo is compatible with the `skills` installer CLI (https://skills.sh/).
@@ -25,28 +27,6 @@ ln -s /ABS/PATH/TO/THIS/REPO/skills ~/.gemini/skills
 
 Note: this repo also contains developer-only skills under `.ai/dev-skills/` for working on this repo. The public catalog lives under `skills/`.
 
-## Scenarios
-
-`_scenarios/` is for integration scenarios that can later be distilled into agent skills.
-
-Workflow (suggested):
-1. Create a scenario folder named after the intended skill.
-2. Research the current "golden path" (upstream docs, examples, and recent issues).
-3. Build a minimal, working project using latest dependencies.
-4. Prove it with an automated E2E test (real uploads, real processing).
-5. Condense into a `SKILL.md` with a narrow scope, clear inputs/outputs, and a runnable checklist.
-
-Conventions:
-- Each scenario is self-contained (own `package.json`).
-- Secrets are read from env vars. Do not commit `.env*` files.
-- Prefer `npx -y @transloadit/node ...` for any Transloadit-side operations (template creation, linting, robot docs).
-
-## Add A Skill
-
-1. Create `skills/<skill-name>/SKILL.md` with tight scope and a runnable checklist.
-2. If it’s an integration, create a matching `_scenarios/<skill-name>/` reference implementation and validate it with an E2E test.
-3. Keep test-harness specifics out of the skill. The skill should read like guidance for a normal production app.
-
 ## Skill Catalog
 
 Categories:
@@ -67,9 +47,12 @@ Builtin template discovery (token-efficient NDJSON, good for agents):
 npx -y @transloadit/node templates list --include-builtin exclusively-latest --fields id,name --json
 ```
 
-Builtins versioning note:
-- Skills/docs use `builtin/<name>@latest` as the stable contract.
-- If `@latest` is not supported yet in your API2, use the concrete builtin version returned by the list output (example: `@0.0.1`).
+## Conventions (For Agents)
+
+- Prefer `npx -y @transloadit/node ...` for any Transloadit-side operations and use `-j/--json` when parsing output.
+- Never expose `TRANSLOADIT_SECRET` to the browser; keep signing strictly server-side.
+- `integrate-*` skills are written as real app integration playbooks (framework-agnostic where possible).
+- `_scenarios/` are internal reference implementations with E2E validation; they are not required by the skills.
 
 ## Notes
 
@@ -81,7 +64,31 @@ Repository layout:
 
 Skill discovery is `SKILL.md`-based, so it’s fine for `_starter-projects/` and `_scenarios/` to be siblings of `skills/` without being interpreted as skills.
 
-## Try-Skill Harness
+## Contributing
+
+### Scenarios
+
+`_scenarios/` is for integration scenarios that can later be distilled into agent skills.
+
+Workflow (suggested):
+1. Create a scenario folder named after the intended skill.
+2. Research the current golden path (upstream docs, examples, and recent issues).
+3. Build a minimal, working project using latest dependencies.
+4. Prove it with an automated E2E test (real uploads, real processing).
+5. Condense into a `SKILL.md` with a narrow scope, clear inputs/outputs, and a runnable checklist.
+
+Conventions:
+- Each scenario is self-contained (own `package.json`).
+- Secrets are read from env vars. Do not commit `.env*` files.
+- Prefer `npx -y @transloadit/node ...` for Transloadit-side operations (template creation, robot docs).
+
+### Add A Skill
+
+1. Create `skills/<skill-name>/SKILL.md` with tight scope and a runnable checklist.
+2. If it’s an integration, create a matching `_scenarios/<skill-name>/` reference implementation and validate it with an E2E test.
+3. Keep test-harness specifics out of the skill. The skill should read like guidance for a normal production app.
+
+### Try-Skill Harness
 
 1. Provision a modern Next.js starter project at `_starter-projects/nextjs16`.
 2. Verify starter works: `cd _starter-projects/nextjs16`

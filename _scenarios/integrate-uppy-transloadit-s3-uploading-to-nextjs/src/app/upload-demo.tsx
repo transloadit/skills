@@ -3,9 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Uppy from '@uppy/core'
 import Dashboard from '@uppy/dashboard'
-import Transloadit from '@uppy/transloadit'
-
-type AssemblyOptions = { params?: unknown; signature?: string | null }
+import Transloadit, { type AssemblyOptions } from '@uppy/transloadit'
 
 export default function UploadDemo() {
   const dashboardEl = useRef<HTMLDivElement | null>(null)
@@ -46,20 +44,20 @@ export default function UploadDemo() {
       inline: true,
       proudlyDisplayPoweredByUppy: false,
       hideUploadButton: true,
-      showProgressDetails: true,
+      hideProgressDetails: false,
       height: 350,
     })
 
     const onAssembly = (assembly: unknown) => setLastAssembly(assembly)
     const onResult = (stepName: string, result: unknown) =>
-      setResults((prev) => {
+      setResults((prev: unknown) => {
         const base: Record<string, unknown> =
           typeof prev === 'object' && prev !== null ? { ...(prev as Record<string, unknown>) } : {}
         const existing = base[stepName]
         base[stepName] = Array.isArray(existing) ? existing.concat([result]) : [result]
         return base
       })
-    const onUploadProgress = (_file: unknown, progress: { bytesUploaded: number; bytesTotal: number }) => {
+    const onUploadProgress = (_file: unknown, progress: { bytesUploaded: number; bytesTotal: number | null }) => {
       if (!progress?.bytesTotal) return
       const pct = Math.round((progress.bytesUploaded / progress.bytesTotal) * 100)
       setUploadPct(pct)
@@ -79,7 +77,7 @@ export default function UploadDemo() {
       uppy.off('transloadit:complete', onComplete)
       uppy.off('upload-progress', onUploadProgress)
       uppy.getPlugin('Dashboard')?.uninstall()
-      uppy.close({ reason: 'unmount' })
+      uppy.destroy()
     }
   }, [uppy])
 
