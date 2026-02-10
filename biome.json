@@ -14,7 +14,7 @@
       "!**/playwright-report",
       "!**/test-results",
       "!**/.vitest",
-      "!_starter-projects/_runs"
+      "!starter-projects/_runs"
     ]
   },
   "linter": {
@@ -37,7 +37,7 @@
   },
   "overrides": [
     {
-      "includes": ["_scenarios/**", "_starter-projects/**"],
+      "includes": ["scenarios/**", "starter-projects/**"],
       "linter": { "enabled": false }
     }
   ]

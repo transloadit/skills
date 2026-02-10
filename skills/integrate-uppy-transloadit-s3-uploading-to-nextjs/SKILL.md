@@ -197,8 +197,8 @@ npx -y @transloadit/node templates create uppy-nextjs-resize-to-s3 ./steps.json 
 
 # References (Internal)
 
-- Working reference implementation: `https://github.com/transloadit/skills/tree/main/_scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs`
-- Proven steps JSON: `https://github.com/transloadit/skills/blob/main/_scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-only.json`, `https://github.com/transloadit/skills/blob/main/_scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-to-s3.json`
+- Working reference implementation: `https://github.com/transloadit/skills/tree/main/scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs`
+- Proven steps JSON: `https://github.com/transloadit/skills/blob/main/scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-only.json`, `https://github.com/transloadit/skills/blob/main/scenarios/integrate-uppy-transloadit-s3-uploading-to-nextjs/transloadit/steps/resize-to-s3.json`
 
 Tested with (see the scenario lockfile for the exact versions):
 - Next.js 16.1.6 (App Router)

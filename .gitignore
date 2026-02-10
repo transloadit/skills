@@ -12,5 +12,5 @@ playwright-report/
 test-results/
 .vitest/
 
-_starter-projects/_runs/
+starter-projects/_runs/
 .yarn/

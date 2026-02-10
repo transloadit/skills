@@ -17,7 +17,7 @@ function sleep(ms: number): Promise<void> {
 
 function usageAndExit(code: number): never {
   console.error(
-    'Usage: node _scripts/try-skill.ts --skill <name> --starter-project <name> [--model <name>] [--unsafe-forward-all-env]',
+    'Usage: node scripts/try-skill.ts --skill <name> --starter-project <name> [--model <name>] [--unsafe-forward-all-env]',
   );
   process.exit(code);
 }
@@ -251,7 +251,7 @@ async function runStep(
 type Acceptance = { acceptancePath: string | null; lines: string[] };
 
 async function loadAcceptance(args: { repoRoot: string; skill: string }): Promise<Acceptance> {
-  const acceptancePath = path.join(args.repoRoot, '_scripts', 'acceptance', `${args.skill}.md`);
+  const acceptancePath = path.join(args.repoRoot, 'scripts', 'acceptance', `${args.skill}.md`);
   if (!(await exists(acceptancePath))) return { acceptancePath: null, lines: [] };
 
   const content = await fs.readFile(acceptancePath, 'utf8');
@@ -372,7 +372,7 @@ async function main(): Promise<void> {
   }
 
   const repoRoot = path.resolve(__dirname, '..');
-  const starterDir = path.join(repoRoot, '_starter-projects', safeStarter);
+  const starterDir = path.join(repoRoot, 'starter-projects', safeStarter);
   if (!(await exists(starterDir))) {
     console.error(`Starter project not found: ${starterDir}`);
     process.exit(2);
@@ -406,7 +406,7 @@ async function main(): Promise<void> {
 
   const iso = new Date().toISOString().replace(/[:.]/g, '-');
   const startedAt = new Date().toISOString();
-  const runRoot = path.join(repoRoot, '_starter-projects', '_runs', safeStarter);
+  const runRoot = path.join(repoRoot, 'starter-projects', '_runs', safeStarter);
   const runDirName = `${iso}-${sanitizeSegment(safeSkill)}`;
   const runDir = path.join(runRoot, runDirName);
 

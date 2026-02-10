@@ -4,9 +4,9 @@
   "type": "module",
   "packageManager": "yarn@4.5.0",
   "scripts": {
-    "lint:ts:scripts": "tsgo -p tsconfig.json --noEmit && echo 'TypeScript linting (_scripts) complete'",
-    "lint:ts:starter": "bash -lc 'cd _starter-projects/nextjs16 && test -d node_modules || npm ci --no-audit --no-fund && ../../node_modules/.bin/tsgo -p tsconfig.json --noEmit' && echo 'TypeScript linting (_starter-projects) complete'",
-    "lint:ts:scenarios": "bash -lc 'set -euo pipefail; for d in _scenarios/*; do test -f \"$d/tsconfig.json\" || continue; (cd \"$d\" && test -d node_modules || npm ci --no-audit --no-fund && ../../node_modules/.bin/tsgo -p tsconfig.json --noEmit); done' && echo 'TypeScript linting (_scenarios) complete'",
+    "lint:ts:scripts": "tsgo -p tsconfig.json --noEmit && echo 'TypeScript linting (scripts) complete'",
+    "lint:ts:starter": "bash -lc 'cd starter-projects/nextjs16 && test -d node_modules || npm ci --no-audit --no-fund && ../../node_modules/.bin/tsgo -p tsconfig.json --noEmit' && echo 'TypeScript linting (starter-projects) complete'",
+    "lint:ts:scenarios": "bash -lc 'set -euo pipefail; for d in scenarios/*; do test -f \"$d/tsconfig.json\" || continue; (cd \"$d\" && test -d node_modules || npm ci --no-audit --no-fund && ../../node_modules/.bin/tsgo -p tsconfig.json --noEmit); done' && echo 'TypeScript linting (scenarios) complete'",
     "lint:ts": "yarn lint:ts:scripts && yarn lint:ts:starter && yarn lint:ts:scenarios",
     "lint:js": "biome check --css-parse-tailwind-directives=true .",
     "fix:js": "biome check --write --css-parse-tailwind-directives=true .",

@@ -114,7 +114,7 @@ export default function SmartCdnDemo() {
 
 # References (Internal)
 
-- Working reference implementation: `https://github.com/transloadit/skills/tree/main/_scenarios/integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs`
+- Working reference implementation: `https://github.com/transloadit/skills/tree/main/scenarios/integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs`
 
 Tested with (see the scenario lockfile for the exact versions):
 - Next.js 16.1.6 (App Router)
