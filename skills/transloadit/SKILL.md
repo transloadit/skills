@@ -16,6 +16,25 @@ Concrete entry points:
 4. `integrate-uppy-transloadit-s3-uploading-to-nextjs`
 5. `integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs`
 
+## Install companion skills
+
+If the skills above are not available in your environment, install all of them at once:
+
+```bash
+npx -y skills add https://github.com/transloadit/skills --all
+```
+
+Or install a single skill:
+
+```bash
+npx -y skills add https://github.com/transloadit/skills/tree/main/skills/<skill-name>
+```
+
+Replace `<skill-name>` with one of: `docs-transloadit-robots`,
+`transform-generate-image-with-transloadit`, `transform-encode-hls-video-with-transloadit`,
+`integrate-uppy-transloadit-s3-uploading-to-nextjs`,
+`integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs`.
+
 # CLI Baseline (Recommended)
 
 Most skills in this repo prefer using the `@transloadit/node` CLI via:
