@@ -1,0 +1,4 @@
+- Use the provided `input/source.jpg` fixture as the source image unless the user says otherwise.
+- Produce one or more PNG outputs under `out/`.
+- The acceptance test will scan `out/` recursively and require that at least one PNG contains transparent pixels and some non-transparent subject pixels.
+- Do not weaken or replace the existing acceptance test contract.

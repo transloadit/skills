@@ -1,0 +1,11 @@
+{
+  "name": "bgremove-oneoff",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:e2e": "node test/e2e/assert-output.mjs"
+  },
+  "dependencies": {
+    "pngjs": "^7.0.0"
+  }
+}

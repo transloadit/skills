@@ -263,6 +263,21 @@ async function loadAcceptance(args: { repoRoot: string; skill: string }): Promis
   return { acceptancePath, lines };
 }
 
+type StarterHarness = { harnessPath: string | null; lines: string[] };
+
+async function loadStarterHarness(args: { starterDir: string }): Promise<StarterHarness> {
+  const harnessPath = path.join(args.starterDir, 'HARNESS.md');
+  if (!(await exists(harnessPath))) return { harnessPath: null, lines: [] };
+
+  const content = await fs.readFile(harnessPath, 'utf8');
+  const lines = content
+    .split(/\r?\n/)
+    .map((l) => l.trimEnd())
+    .filter((l) => l.trim() !== '');
+
+  return { harnessPath, lines };
+}
+
 function buildChildEnv(args: {
   baseEnv: NodeJS.ProcessEnv;
   overlay: Record<string, string>;
@@ -308,6 +323,7 @@ function buildChildEnv(args: {
   ]);
 
   const allowPrefixes = [
+    'TRANSLOADIT_',
     'LC_',
     'XDG_',
     'NPM_CONFIG_',
@@ -425,11 +441,12 @@ async function main(): Promise<void> {
   const diffStatPath = path.join(runDir, 'try-skill.diff.stat.txt');
 
   const acceptance = await loadAcceptance({ repoRoot, skill: safeSkill });
+  const starterHarness = await loadStarterHarness({ starterDir });
 
   const prompt = [
-    'You are operating inside a single Next.js project directory.',
+    'You are operating inside a single project directory.',
     'Goal: apply the provided skill to this project.',
-    'Internal harness requirement: make `npm run test:e2e` pass (the harness will run it after you finish).',
+    'Internal harness requirement: make `npm run test:e2e` pass (the harness will run `npm ci` and then `npm run test:e2e` after you finish).',
     'Constraints:',
     '- Do not run `git commit` and do not create new git history.',
     '- Only change files inside this project directory.',
@@ -442,16 +459,18 @@ async function main(): Promise<void> {
     '- Do not `cat` `.env*` files or run `env`/`printenv`.',
     '',
     'Operational requirements:',
-    '- Ensure `npm run test:e2e` exists and passes.',
-    '- If Playwright is used, make sure the Chromium browser is installed (via `playwright install chromium`, a `pretest:e2e`, or similar).',
-    '',
-    'Internal E2E harness defaults (keep it minimal and portable):',
-    '- Use Vitest + Playwright (Chromium).',
-    '- Add `scripts.test:e2e` = `vitest run -c vitest.e2e.config.ts`.',
-    '- Add a `pretest:e2e` that installs Chromium if needed: `playwright install chromium`.',
-    '- Add `vitest.e2e.config.ts` with `testTimeout`/`hookTimeout` and `include: ["test/e2e/**/*.test.ts"]`.',
-    '- Put tests under `test/e2e/` and start Next in the test (spawn `next dev` on a free port, wait for readiness, then drive via Playwright).',
+    '- Keep the acceptance contract intact. If tests already exist, do not weaken them to make the run pass.',
     '- Read `TRANSLOADIT_*` from `process.env` (do not depend on `.env.local` or `dotenv` for the harness).',
+    ...(starterHarness.lines.length > 0
+      ? [
+          '',
+          'Starter-specific harness notes:',
+          ...starterHarness.lines,
+          ...(starterHarness.harnessPath
+            ? [`(source: ${path.relative(repoRoot, starterHarness.harnessPath)})`]
+            : []),
+        ]
+      : []),
     ...(acceptance.lines.length > 0
       ? [
           '',
