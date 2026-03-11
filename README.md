@@ -46,14 +46,14 @@ Categories:
 - `transform-*`: one-off transforms (CLI driven, outputs downloaded via `-o`)
 - `integrate-*`: real-world integration guides (validated via `scenarios/` + E2E, but not requiring any test harness)
 
-Current skills:
-- `transloadit` (router)
-- `docs-transloadit-robots`
-- `transform-generate-image-with-transloadit`
-- `transform-encode-hls-video-with-transloadit`
-- `transform-remove-background-with-transloadit`
-- `integrate-uppy-transloadit-s3-uploading-to-nextjs`
-- `integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs`
+The public catalog is whatever currently lives under [`skills/`](/Users/kvz/code/skills/skills).
+For a current list, use:
+
+```bash
+npx -y skills add https://github.com/transloadit/skills --list
+```
+
+Or inspect the directories under `skills/` directly.
 
 Builtin template discovery (token-efficient NDJSON, good for agents):
 ```bash
