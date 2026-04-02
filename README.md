@@ -46,6 +46,12 @@ Categories:
 - `transform-*`: one-off transforms (CLI driven, outputs downloaded via `-o`)
 - `integrate-*`: real-world integration guides (validated via `scenarios/` + E2E, but not requiring any test harness)
 
+Examples:
+- `transform-generate-image-with-transloadit`
+- `transform-remove-background-with-transloadit`
+- `transform-describe-image-with-transloadit`
+- `integrate-uppy-transloadit-s3-uploading-to-nextjs`
+
 The public catalog is whatever currently lives under [`skills/`](/Users/kvz/code/skills/skills).
 For a current list, use:
 
