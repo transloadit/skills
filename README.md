@@ -47,6 +47,7 @@ Categories:
 - `integrate-*`: real-world integration guides (validated via `scenarios/` + E2E, but not requiring any test harness)
 
 Examples:
+- `generate-image`
 - `transform-generate-image-with-transloadit`
 - `transform-remove-background-with-transloadit`
 - `transform-describe-image-with-transloadit`
