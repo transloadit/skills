@@ -50,6 +50,7 @@ Examples:
 - `transform-generate-image-with-transloadit`
 - `transform-remove-background-with-transloadit`
 - `transform-describe-image-with-transloadit`
+- `transform-convert-markdown-to-pdf-with-transloadit`
 - `integrate-uppy-transloadit-s3-uploading-to-nextjs`
 
 The public catalog is whatever currently lives under [`skills/`](/Users/kvz/code/skills/skills).

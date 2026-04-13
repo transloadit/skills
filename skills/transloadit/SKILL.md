@@ -15,8 +15,9 @@ Concrete entry points:
 3. `transform-encode-hls-video-with-transloadit`
 4. `transform-remove-background-with-transloadit`
 5. `transform-describe-image-with-transloadit`
-6. `integrate-uppy-transloadit-s3-uploading-to-nextjs`
-7. `integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs`
+6. `transform-convert-markdown-to-pdf-with-transloadit`
+7. `integrate-uppy-transloadit-s3-uploading-to-nextjs`
+8. `integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs`
 
 ## Install companion skills
 
@@ -35,6 +36,7 @@ npx -y skills add https://github.com/transloadit/skills/tree/main/skills/<skill-
 Replace `<skill-name>` with one of: `docs-transloadit-robots`,
 `transform-generate-image-with-transloadit`, `transform-encode-hls-video-with-transloadit`,
 `transform-remove-background-with-transloadit`, `transform-describe-image-with-transloadit`,
+`transform-convert-markdown-to-pdf-with-transloadit`,
 `integrate-uppy-transloadit-s3-uploading-to-nextjs`,
 `integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs`.
 
