@@ -70,6 +70,7 @@ npx -y @transloadit/node templates list --include-builtin exclusively-latest --f
 ## Conventions (For Agents)
 
 - Prefer `npx -y @transloadit/node ...` for any Transloadit-side operations and use `-j/--json` when parsing output.
+- For one-off `transform-*` skills, prefer an explicit input/output contract, simple env resolution (`process env` first, then `.env`), and a final output-file existence check.
 - Never expose `TRANSLOADIT_SECRET` to the browser; keep signing strictly server-side.
 - `integrate-*` skills are written as real app integration playbooks (framework-agnostic where possible).
 - `scenarios/` are internal reference implementations with E2E validation; they are not required by the skills.

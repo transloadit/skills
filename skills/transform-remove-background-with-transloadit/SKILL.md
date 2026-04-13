@@ -1,13 +1,18 @@
 ---
 name: transform-remove-background-with-transloadit
-description: One-off background removal (local image -> transparent PNG) using Transloadit via the `transloadit` CLI. Use a minimal `/image/bgremove` steps JSON and download the result to an explicit `.png` path via `-o`.
+description: One-off background removal (local image -> transparent PNG) using the official `@transloadit/node` CLI. Use a minimal `/image/bgremove` steps JSON and download the result to an explicit `.png` path via `-o`.
 ---
+
+# Inputs
+
+- Absolute path to a local input image
+- Optional output path; default to an explicit sibling `.png`
 
 # Prepare Instructions
 
-Required env:
-- `TRANSLOADIT_KEY`
-- `TRANSLOADIT_SECRET`
+Resolve credentials in this order:
+- Use `TRANSLOADIT_KEY` and `TRANSLOADIT_SECRET` if they already exist in the environment.
+- Otherwise source a nearby `.env` file that contains both variables.
 
 Create `steps.json` in the current working directory.
 
@@ -39,6 +44,8 @@ npx -y @transloadit/node assemblies create \
 ```
 
 Replace `./input/source.jpg` with your real input image path when needed.
+
+After the command finishes, confirm the PNG exists at the expected output path.
 
 # Debug If It Fails
 

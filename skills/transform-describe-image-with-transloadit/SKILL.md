@@ -1,11 +1,22 @@
 ---
 name: transform-describe-image-with-transloadit
-description: One-off image description using Transloadit via the `transloadit` CLI. Use `image describe --fields labels` for object-style labels, or `image describe --for wordpress` for structured alt text, title, caption, and description JSON.
+description: One-off image description using the official `@transloadit/node` CLI. Use `image describe --fields labels` for object-style labels, or `image describe --for wordpress` for structured alt text, title, caption, and description JSON.
 ---
+
+# Inputs
+
+- Absolute path to a local input image
+- Explicit `.json` output path
+
+# Prepare
+
+Resolve credentials in this order:
+- Use `TRANSLOADIT_KEY` and `TRANSLOADIT_SECRET` if they already exist in the environment.
+- Otherwise source a nearby `.env` file that contains both variables.
 
 # Run
 
-Use the Transloadit Node CLI directly.
+Use the official Transloadit Node CLI directly.
 
 Labels / object-style description:
 
@@ -33,6 +44,8 @@ npx -y @transloadit/node image describe \
   --fields altText,title,caption,description \
   --out ./fields.json
 ```
+
+After the command finishes, confirm the JSON file exists at the expected output path.
 
 # Output Shapes
 
