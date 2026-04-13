@@ -1,24 +1,36 @@
 ---
 name: transform-generate-image-with-transloadit
-description: One-off image generation (prompt -> image file) using Transloadit via the `transloadit` CLI. Prefer builtin templates (`builtin/generate-image@latest`) and download outputs locally via `-o`.
+description: One-off image generation (prompt -> image file) using Transloadit via the `transloadit` CLI. Prefer `image generate` for text-only and input-guided generation, and download outputs locally via `-o`.
 ---
 
-# Run (No Input File)
+# Run
 
-Do not use `--watch` for inputless templates.
+Use the `image generate` intent for quick image generation from a prompt.
 
 ```bash
-npx -y @transloadit/node assemblies create \
-  --template builtin/generate-image@latest \
-  -f prompt='A minimal product photo of a chameleon on white background' \
-  -o ./out/ \
-  -j
+npx -y @transloadit/node image generate \
+  --prompt 'A minimal product photo of a chameleon on white background' \
+  -o ./out.png
 ```
 
-Footnote (discover more builtin templates):
+# Run With Input Images
+
+You can also guide generation with one or more input images. Prefer meaningful filenames and refer
+to them in the prompt.
+
 ```bash
-npx -y @transloadit/node templates list --include-builtin exclusively-latest --fields id,name --json
+npx -y @transloadit/node image generate \
+  --input ./person1.jpg \
+  --input ./person2.jpg \
+  --input ./background.jpg \
+  --prompt 'Place person1.jpg feeding person2.jpg in front of background.jpg' \
+  -o ./out.png
 ```
+
+Notes:
+- The CLI defaults to `google/nano-banana-2`.
+- Repeated `--input` values are bundled into a single `/image/generate` assembly.
+- Prompt-only generation still works without any `--input`.
 
 # Debug If It Fails
 
@@ -27,4 +39,5 @@ npx -y @transloadit/node assemblies get <assemblyIdOrUrl> -j
 ```
 
 Notes:
-- Some generator/AI robots can be account-gated; if the assembly fails with capability/availability errors, switch templates or confirm the feature is enabled for your account.
+- Some generator/AI robots can be account-gated; if the assembly fails with capability or
+  availability errors, switch models or confirm the feature is enabled for your account.
