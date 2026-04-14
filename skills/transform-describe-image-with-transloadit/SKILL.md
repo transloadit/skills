@@ -15,7 +15,7 @@ Resolve credentials in this order:
 - The current working directory `.env` only
 - `~/.transloadit/credentials`
 
-If your `.env` lives in a parent directory, `cd` there first or export the variables into the shell.
+If your `.env` lives in a parent directory, export the variables into the shell first.
 
 # Run
 
@@ -70,8 +70,8 @@ After the command finishes, confirm the JSON file exists at the expected output 
 - Prefer `--for wordpress` when you want publishable CMS fields.
 - Prefer `--fields labels` when you want recognizer-style tags instead of authored copy.
 - `--model` only matters for authored fields, not for `labels`.
-- Prefer `~/.transloadit/credentials` when you want the CLI to work from any directory without
-  exporting env vars each time.
+- Prefer `~/.transloadit/credentials` as the default fallback when you want a reusable user-level setup.
+- A current-directory `.env` still takes precedence, so avoid it when deterministic account selection matters.
 - If credentials only exist in a repo-root `.env`, run the command from that directory or export the variables first.
 
 # Debug If It Fails

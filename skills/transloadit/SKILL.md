@@ -55,11 +55,11 @@ The CLI resolves auth in this order:
 2. The current working directory `.env`
 3. `~/.transloadit/credentials`
 
-Prefer `~/.transloadit/credentials` for user-level or agent-level setup that should work from any
-directory. The file uses dotenv syntax and can include `TRANSLOADIT_KEY`,
+Prefer `~/.transloadit/credentials` as the default fallback for user-level or agent-level setup.
+The file uses dotenv syntax and can include `TRANSLOADIT_KEY`,
 `TRANSLOADIT_SECRET`, `TRANSLOADIT_ENDPOINT`, and `TRANSLOADIT_AUTH_TOKEN`.
-The `.env` lookup is cwd-only. If your `.env` lives in a parent directory, `cd` there first or
-export the variables into the shell.
+The `.env` lookup is cwd-only and takes precedence over `~/.transloadit/credentials`. If your
+`.env` lives in a parent directory, export the variables into the shell.
 
 Builtin template discovery (token-efficient NDJSON):
 ```bash
