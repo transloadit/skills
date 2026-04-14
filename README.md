@@ -71,7 +71,10 @@ npx -y @transloadit/node templates list --include-builtin exclusively-latest --f
 ## Conventions (For Agents)
 
 - Prefer `npx -y @transloadit/node ...` for any Transloadit-side operations and use `-j/--json` when parsing output.
-- For one-off `transform-*` skills, prefer an explicit input/output contract, simple env resolution (`process env` first, then `.env`), and a final output-file existence check.
+- For one-off `transform-*` skills, prefer an explicit input/output contract and a final output-file existence check.
+- The `@transloadit/node` CLI resolves auth in this order: shell env, the current working directory `.env`, then `~/.transloadit/credentials`.
+- The `.env` lookup is cwd-only. If a repo-root `.env` lives above the current directory, export the vars into the shell instead of relying on parent-directory discovery.
+- When documenting user-level CLI usage, present `~/.transloadit/credentials` as the default fallback and note that a cwd `.env` still takes precedence.
 - Never expose `TRANSLOADIT_SECRET` to the browser; keep signing strictly server-side.
 - `integrate-*` skills are written as real app integration playbooks (framework-agnostic where possible).
 - `scenarios/` are internal reference implementations with E2E validation; they are not required by the skills.

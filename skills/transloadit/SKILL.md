@@ -50,6 +50,17 @@ npx -y @transloadit/node ...
 
 If a command errors with "Unsupported option name" or a missing subcommand, update to a newer `@transloadit/node`.
 
+The CLI resolves auth in this order:
+1. Shell environment variables
+2. The current working directory `.env`
+3. `~/.transloadit/credentials`
+
+Prefer `~/.transloadit/credentials` as the default fallback for user-level or agent-level setup.
+The file uses dotenv syntax and can include `TRANSLOADIT_KEY`,
+`TRANSLOADIT_SECRET`, `TRANSLOADIT_ENDPOINT`, and `TRANSLOADIT_AUTH_TOKEN`.
+The `.env` lookup is cwd-only and takes precedence over `~/.transloadit/credentials`. If your
+`.env` lives in a parent directory, export the variables into the shell.
+
 Builtin template discovery (token-efficient NDJSON):
 ```bash
 npx -y @transloadit/node templates list --include-builtin exclusively-latest --fields id,name --json
