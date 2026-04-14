@@ -11,8 +11,9 @@ description: One-off background removal (local image -> transparent PNG) using t
 # Prepare Instructions
 
 Resolve credentials in this order:
-- Use `TRANSLOADIT_KEY` and `TRANSLOADIT_SECRET` if they already exist in the environment.
-- Otherwise source a nearby `.env` file that contains both variables.
+- Shell environment variables
+- The current working directory `.env`
+- `~/.transloadit/credentials`
 
 Create `steps.json` in the current working directory.
 
@@ -55,5 +56,7 @@ npx -y @transloadit/node assemblies get <assemblyIdOrUrl> -j
 
 Notes:
 - Keep `format: "png"` so the downloaded output preserves transparency.
+- Prefer `~/.transloadit/credentials` when you want the CLI to work from any directory without
+  exporting env vars each time.
 - Prefer an explicit PNG filename like `./out/result.png`. With the current CLI, using a directory output for a single result may preserve the input path instead of giving you a `.png` filename.
 - Prefer a clear foreground subject photo; background removal quality depends on the source image.

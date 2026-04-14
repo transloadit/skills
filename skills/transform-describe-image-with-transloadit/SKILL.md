@@ -11,8 +11,9 @@ description: One-off image description using the official `@transloadit/node` CL
 # Prepare
 
 Resolve credentials in this order:
-- Use `TRANSLOADIT_KEY` and `TRANSLOADIT_SECRET` if they already exist in the environment.
-- Otherwise source a nearby `.env` file that contains both variables.
+- Shell environment variables
+- The current working directory `.env`
+- `~/.transloadit/credentials`
 
 # Run
 
@@ -67,6 +68,8 @@ After the command finishes, confirm the JSON file exists at the expected output 
 - Prefer `--for wordpress` when you want publishable CMS fields.
 - Prefer `--fields labels` when you want recognizer-style tags instead of authored copy.
 - `--model` only matters for authored fields, not for `labels`.
+- Prefer `~/.transloadit/credentials` when you want the CLI to work from any directory without
+  exporting env vars each time.
 
 # Debug If It Fails
 
