@@ -23,8 +23,9 @@ description: Convert a local Markdown file to a sibling PDF via the official `@t
 2. Derive the output path beside it unless the user gave a different `.pdf` target.
 3. Let the CLI resolve auth automatically in this order:
    - Shell environment variables
-   - The current working directory `.env`
+   - The current working directory `.env` only
    - `~/.transloadit/credentials`
+   If your `.env` lives in a parent directory, `cd` there first or export the variables into the shell.
 4. Run the conversion with the official CLI:
 
 ```bash
@@ -36,5 +37,6 @@ npx -y @transloadit/node markdown pdf --input /ABS/PATH/file.md --out /ABS/PATH/
 - Prefer `@transloadit/node`; it is the official CLI route and exposes `markdown pdf`.
 - Prefer `~/.transloadit/credentials` when you want this to work from any directory without
   exporting env vars each time.
+- If credentials only exist in a repo-root `.env`, run the command from that directory or export the variables first.
 - Keep the secret server-side or local-only; never move `TRANSLOADIT_SECRET` into browser code.
 - After conversion, confirm the PDF exists at the expected output path.

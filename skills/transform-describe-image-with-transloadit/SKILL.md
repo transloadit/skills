@@ -12,8 +12,10 @@ description: One-off image description using the official `@transloadit/node` CL
 
 Resolve credentials in this order:
 - Shell environment variables
-- The current working directory `.env`
+- The current working directory `.env` only
 - `~/.transloadit/credentials`
+
+If your `.env` lives in a parent directory, `cd` there first or export the variables into the shell.
 
 # Run
 
@@ -70,6 +72,7 @@ After the command finishes, confirm the JSON file exists at the expected output 
 - `--model` only matters for authored fields, not for `labels`.
 - Prefer `~/.transloadit/credentials` when you want the CLI to work from any directory without
   exporting env vars each time.
+- If credentials only exist in a repo-root `.env`, run the command from that directory or export the variables first.
 
 # Debug If It Fails
 
