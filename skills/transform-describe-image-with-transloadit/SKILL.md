@@ -6,7 +6,7 @@ description: One-off image description using the official `@transloadit/node` CL
 # Inputs
 
 - Absolute path to a local input image
-- Explicit `.json` output path
+- Optional `.json` output path; default is the same path with `.json`
 
 # Prepare
 
@@ -27,7 +27,7 @@ Labels / object-style description:
 npx -y @transloadit/node image describe \
   --input ./input.jpg \
   --fields labels \
-  --out ./labels.json
+  --output ./labels.json
 ```
 
 WordPress-ready fields:
@@ -36,7 +36,7 @@ WordPress-ready fields:
 npx -y @transloadit/node image describe \
   --input ./input.jpg \
   --for wordpress \
-  --out ./fields.json
+  --output ./fields.json
 ```
 
 Custom field selection:
@@ -45,10 +45,11 @@ Custom field selection:
 npx -y @transloadit/node image describe \
   --input ./input.jpg \
   --fields altText,title,caption,description \
-  --out ./fields.json
+  --output ./fields.json
 ```
 
-After the command finishes, confirm the JSON file exists at the expected output path.
+If you omit `--output`, the CLI writes the JSON file next to the input image using the same base
+name. After the command finishes, confirm the JSON file exists at the expected output path.
 
 # Output Shapes
 
