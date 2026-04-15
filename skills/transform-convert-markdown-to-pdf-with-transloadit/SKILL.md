@@ -29,12 +29,13 @@ description: Convert a local Markdown file to a sibling PDF via the official `@t
 4. Run the conversion with the official CLI:
 
 ```bash
-npx -y @transloadit/node markdown pdf --input /ABS/PATH/file.md --out /ABS/PATH/file.pdf
+npx -y @transloadit/node markdown pdf --input /ABS/PATH/file.md --output /ABS/PATH/file.pdf
 ```
 
 ## Notes
 
 - Prefer `@transloadit/node`; it is the official CLI route and exposes `markdown pdf`.
+- When no `--output` is provided, the CLI writes the PDF next to the Markdown file by default.
 - Prefer `~/.transloadit/credentials` as the default fallback when you want a reusable user-level setup.
 - A current-directory `.env` still takes precedence, so avoid it when deterministic account selection matters.
 - If credentials only exist in a repo-root `.env`, run the command from that directory or export the variables first.

@@ -1,6 +1,6 @@
 ---
 name: transform-generate-image-with-transloadit
-description: One-off image generation (prompt -> image file) using Transloadit via the `transloadit` CLI. Prefer `image generate` for text-only and input-guided generation, and download outputs locally via `-o`.
+description: One-off image generation (prompt -> image file) using Transloadit via the `transloadit` CLI. Prefer `image generate` for text-only and input-guided generation, and use `--output` when you need a deterministic path.
 ---
 
 # Run
@@ -10,7 +10,7 @@ Use the `image generate` intent for quick image generation from a prompt.
 ```bash
 npx -y @transloadit/node image generate \
   --prompt 'A minimal product photo of a chameleon on white background' \
-  -o ./out.png
+  --output ./out.png
 ```
 
 # Run With Input Images
@@ -24,13 +24,14 @@ npx -y @transloadit/node image generate \
   --input ./person2.jpg \
   --input ./background.jpg \
   --prompt 'Place person1.jpg feeding person2.jpg in front of background.jpg' \
-  -o ./out.png
+  --output ./out.png
 ```
 
 Notes:
 - The CLI defaults to `google/nano-banana-2`.
 - Repeated `--input` values are bundled into a single `/image/generate` assembly.
 - Prompt-only generation still works without any `--input`.
+- Without `--output`, prompt-only and multi-input runs default to the current working directory.
 
 # Debug If It Fails
 
