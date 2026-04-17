@@ -1,6 +1,8 @@
 ---
 name: transform-build-mosaic-collage-with-transloadit
 description: One-off justified mosaic photo collage (N local images -> single image) using the official `@transloadit/node` CLI. Uses the `/image/merge` Robot's `mosaic` effect to build a tiled layout that keeps every photo fully visible, and downloads the result to an explicit output path via `--output`.
+when_to_use: |
+  Triggers when the user asks to create a mosaic collage, tile photos edge-to-edge, build a justified photo grid, make a Flickr-style photo layout, or compose N photos into a clean editorial collage that keeps every photo fully visible. Choose this over the polaroid skill when the vibe is clean and editorial (product grids, portfolio hero sections, social previews from a batch), and over `transform-generate-image-with-transloadit` when the input is N existing photos rather than a text prompt.
 ---
 
 # Inputs

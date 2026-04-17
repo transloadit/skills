@@ -47,11 +47,12 @@ Categories:
 - `integrate-*`: real-world integration guides (validated via `scenarios/` + E2E, but not requiring any test harness)
 
 Examples:
-- `generate-image`
 - `transform-generate-image-with-transloadit`
 - `transform-remove-background-with-transloadit`
 - `transform-describe-image-with-transloadit`
 - `transform-convert-markdown-to-pdf-with-transloadit`
+- `transform-build-polaroid-collage-with-transloadit`
+- `transform-build-mosaic-collage-with-transloadit`
 - `integrate-uppy-transloadit-s3-uploading-to-nextjs`
 
 The public catalog is whatever currently lives under [`skills/`](/Users/kvz/code/skills/skills).

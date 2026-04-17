@@ -1,6 +1,8 @@
 ---
 name: transform-build-polaroid-collage-with-transloadit
 description: One-off polaroid-stack photo collage (N local images -> single image) using the official `@transloadit/node` CLI. Uses the `/image/merge` Robot's `polaroid-stack` effect and downloads the result to an explicit output path via `--output`.
+when_to_use: |
+  Triggers when the user asks to create a polaroid collage, build a polaroid stack, arrange photos as polaroids, make a scrapbook-style photo collage, or lay out tilted overlapping instant photos on a canvas. Choose this over the mosaic skill when the vibe is personal or scrapbook-ish (event recaps, "year in photos"), and over `transform-generate-image-with-transloadit` when the input is N existing photos rather than a text prompt.
 ---
 
 # Inputs
