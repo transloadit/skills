@@ -1,6 +1,8 @@
 ---
 name: transform-generate-image-with-transloadit
 description: One-off image generation (prompt -> image file) using Transloadit via the `transloadit` CLI. Prefer `image generate` for text-only and input-guided generation, and use `--output` when you need a deterministic path.
+when_to_use: |
+  Triggers when the user asks to generate an image, create an image from a prompt, make an AI image, render a picture from text, or guide image generation with reference photos. Choose this for prompt-driven or prompt+input-guided generation of a local image file. Prefer this over the collage skills when the input is a text prompt rather than N existing photos to composite.
 ---
 
 # Run
