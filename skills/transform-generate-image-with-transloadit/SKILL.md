@@ -15,6 +15,20 @@ npx -y @transloadit/node image generate \
   --output ./out.png
 ```
 
+# Run With OpenAI gpt-image-2
+
+Use this when the user explicitly asks for `gpt-image-2` or OpenAI image generation. Keep it
+opt-in for now; the CLI default remains `google/nano-banana-2`.
+
+```bash
+npx -y @transloadit/node image generate \
+  --model gpt-image-2 \
+  --width 1024 \
+  --height 1024 \
+  --prompt 'A ceramic coffee mug on a white seamless studio background' \
+  --output ./out.png
+```
+
 # Run With Input Images
 
 You can also guide generation with one or more input images. Prefer meaningful filenames and refer
@@ -31,6 +45,7 @@ npx -y @transloadit/node image generate \
 
 Notes:
 - The CLI defaults to `google/nano-banana-2`.
+- `gpt-image-2` is supported when you pass `--model gpt-image-2`.
 - Repeated `--input` values are bundled into a single `/image/generate` assembly.
 - Prompt-only generation still works without any `--input`.
 - Without `--output`, prompt-only and multi-input runs default to the current working directory.
