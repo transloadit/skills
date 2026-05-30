@@ -51,6 +51,7 @@ Examples:
 - `transform-remove-background-with-transloadit`
 - `transform-describe-image-with-transloadit`
 - `transform-convert-markdown-to-pdf-with-transloadit`
+- `transform-transcribe-audio-with-transloadit`
 - `transform-build-polaroid-collage-with-transloadit`
 - `transform-build-mosaic-collage-with-transloadit`
 - `integrate-uppy-transloadit-s3-uploading-to-nextjs`
