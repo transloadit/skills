@@ -10,10 +10,9 @@ export async function GET() {
     const authKey = getRequiredEnv('TRANSLOADIT_KEY');
     const authSecret = getRequiredEnv('TRANSLOADIT_SECRET');
 
-    // These values don't need to exist for signing, but real deployments should set them.
-    const workspace = process.env.TRANSLOADIT_SMARTCDN_WORKSPACE || 'demo';
-    const template = process.env.TRANSLOADIT_SMARTCDN_TEMPLATE || 'serve-preview';
-    const input = process.env.TRANSLOADIT_SMARTCDN_INPUT || 'example.jpg';
+    const workspace = getRequiredEnv('TRANSLOADIT_SMARTCDN_WORKSPACE');
+    const template = getRequiredEnv('TRANSLOADIT_SMARTCDN_TEMPLATE');
+    const input = getRequiredEnv('TRANSLOADIT_SMARTCDN_INPUT');
 
     const url = getSignedSmartCdnUrl({
       workspace,
