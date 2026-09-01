@@ -12,11 +12,12 @@ What it proves:
 Required:
 - `TRANSLOADIT_KEY`
 - `TRANSLOADIT_SECRET`
-
-Optional:
 - `TRANSLOADIT_SMARTCDN_WORKSPACE`
 - `TRANSLOADIT_SMARTCDN_TEMPLATE`
 - `TRANSLOADIT_SMARTCDN_INPUT`
+
+The workspace/template/input triplet must identify a deliberately configured asset-delivery
+contract. Do not use a shared Template that accepts an arbitrary origin URL.
 
 This scenario will load `../../.env` automatically as a local-only convenience. Real apps should use their own `.env.local` and normal Next.js env loading.
 

@@ -6,6 +6,12 @@ import { chromium } from 'playwright';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ensureTransloaditEnv } from '../../src/lib/transloadit-env';
 
+const smartCdnConfiguration = {
+  input: 'images/example.jpg',
+  template: 'asset-delivery',
+  workspace: 'skill-e2e',
+};
+
 const getFreePort = async (): Promise<number> =>
   await new Promise((resolve, reject) => {
     const server = net.createServer();
@@ -44,6 +50,9 @@ describe('Smart CDN signing scenario', () => {
         env: {
           ...process.env,
           NEXT_TELEMETRY_DISABLED: '1',
+          TRANSLOADIT_SMARTCDN_INPUT: smartCdnConfiguration.input,
+          TRANSLOADIT_SMARTCDN_TEMPLATE: smartCdnConfiguration.template,
+          TRANSLOADIT_SMARTCDN_WORKSPACE: smartCdnConfiguration.workspace,
         },
         stdio: 'ignore',
       },
@@ -88,9 +97,14 @@ describe('Smart CDN signing scenario', () => {
       expect(text).toBeTruthy();
       const payload = JSON.parse(text as string) as Record<string, unknown>;
 
+      expect(payload).toMatchObject(smartCdnConfiguration);
       expect(typeof payload.url).toBe('string');
       const url = new URL(payload.url as string);
       expect(url.protocol).toBe('https:');
+      expect(url.hostname).toBe(`${smartCdnConfiguration.workspace}.tlcdn.com`);
+      expect(url.pathname).toBe(
+        `/${smartCdnConfiguration.template}/${encodeURIComponent(smartCdnConfiguration.input)}`,
+      );
       // Signature parameter name may evolve; check for a common one.
       expect(url.searchParams.has('sig') || url.searchParams.has('signature')).toBe(true);
     } finally {

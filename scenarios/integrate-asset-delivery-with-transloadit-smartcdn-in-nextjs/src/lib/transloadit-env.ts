@@ -7,10 +7,9 @@ export function ensureTransloaditEnv(): void {
   if (loaded) return;
   loaded = true;
 
-  if (process.env.TRANSLOADIT_KEY && process.env.TRANSLOADIT_SECRET) return;
-
   dotenv.config({
     path: path.resolve(process.cwd(), '../../.env'),
+    quiet: true,
   });
 }
 

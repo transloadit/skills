@@ -1,14 +1,20 @@
 ---
 name: integrate-asset-delivery-with-transloadit-smartcdn-in-nextjs
-description: Add Transloadit Smart CDN URL signing to a Next.js App Router project (server-side signing route + optional client demo page).
+description: Add server-side Transloadit Smart CDN URL signing for an explicitly configured asset to a Next.js App Router project.
 ---
 
 # Inputs
 
-- Required env (server-only): `TRANSLOADIT_KEY`, `TRANSLOADIT_SECRET`
-- Optional env: `TRANSLOADIT_SMARTCDN_WORKSPACE`, `TRANSLOADIT_SMARTCDN_TEMPLATE`, `TRANSLOADIT_SMARTCDN_INPUT`
+- Required env (server-only): `TRANSLOADIT_KEY`, `TRANSLOADIT_SECRET`,
+  `TRANSLOADIT_SMARTCDN_WORKSPACE`, `TRANSLOADIT_SMARTCDN_TEMPLATE`, and
+  `TRANSLOADIT_SMARTCDN_INPUT`
 
 For local dev, put these in `.env.local`. Never expose `TRANSLOADIT_SECRET` to the browser.
+
+Use a Template owned by `TRANSLOADIT_SMARTCDN_WORKSPACE` and give `TRANSLOADIT_SMARTCDN_INPUT` a
+fixed asset or storage path. Do not use a shared Template that accepts an arbitrary origin URL. If
+a workspace Template imports over HTTP, constrain its origin and path in the Template instead of
+accepting an arbitrary URL from the request.
 
 # Install
 
@@ -32,20 +38,19 @@ import { getSignedSmartCdnUrl } from '@transloadit/utils/node'
 
 export const runtime = 'nodejs'
 
-function reqEnv(name: string): string {
-  const v = process.env[name]
-  if (!v) throw new Error(`Missing required env var: ${name}`)
-  return v
+function getRequiredEnv(name: string): string {
+  const value = process.env[name]
+  if (!value) throw new Error(`Missing required env var: ${name}`)
+  return value
 }
 
 export async function GET() {
   try {
-    const authKey = reqEnv('TRANSLOADIT_KEY')
-    const authSecret = reqEnv('TRANSLOADIT_SECRET')
-
-    const workspace = process.env.TRANSLOADIT_SMARTCDN_WORKSPACE || 'demo'
-    const template = process.env.TRANSLOADIT_SMARTCDN_TEMPLATE || 'serve-preview'
-    const input = process.env.TRANSLOADIT_SMARTCDN_INPUT || 'example.jpg'
+    const authKey = getRequiredEnv('TRANSLOADIT_KEY')
+    const authSecret = getRequiredEnv('TRANSLOADIT_SECRET')
+    const workspace = getRequiredEnv('TRANSLOADIT_SMARTCDN_WORKSPACE')
+    const template = getRequiredEnv('TRANSLOADIT_SMARTCDN_TEMPLATE')
+    const input = getRequiredEnv('TRANSLOADIT_SMARTCDN_INPUT')
 
     const url = getSignedSmartCdnUrl({ workspace, template, input, authKey, authSecret })
 
@@ -56,6 +61,10 @@ export async function GET() {
   }
 }
 ```
+
+This route signs one server-configured public asset. Do not replace `workspace`, `template`, or
+`input` with unchecked query/body values. For private assets, authenticate and authorize the caller
+before returning a short-lived URL.
 
 ## 2) Optional: a tiny demo page
 
@@ -110,7 +119,7 @@ export default function SmartCdnDemo() {
 # Quick Check
 
 - Start dev server, then open `/smartcdn` or fetch `/api/smartcdn`.
-- Expect JSON including a `url` and your `{ workspace, template, input }`.
+- Expect JSON including a `url` and the configured `{ workspace, template, input }`.
 
 # References (Internal)
 
