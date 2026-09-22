@@ -7,22 +7,25 @@ when_to_use: |
 
 # Run
 
-Use the `image generate` intent for quick image generation from a prompt.
+Use the `image generate` intent with Images 2.5 Flare for quick image generation from a prompt.
+Pass the model explicitly so an older installed CLI does not select its previous default.
 
 ```bash
 npx -y @transloadit/node image generate \
+  --model openai/gpt-image-2.5-flare \
   --prompt 'A minimal product photo of a chameleon on white background' \
   --output ./out.png
 ```
 
-# Run With OpenAI gpt-image-2
+# Run With Images 2.5 Sunburst
 
-Use this when the user explicitly asks for `openai/gpt-image-2`, `gpt-image-2`, or OpenAI image
-generation. Keep it opt-in for now; the CLI default remains `google/nano-banana-2`.
+Use Sunburst when the user asks for it or prioritizes precision over latency. Keep Flare as the
+default for everyday generation. Preserve any explicitly requested older model instead of
+silently substituting a newer one.
 
 ```bash
 npx -y @transloadit/node image generate \
-  --model openai/gpt-image-2 \
+  --model openai/gpt-image-2.5-sunburst \
   --width 1024 \
   --height 1024 \
   --prompt 'A ceramic coffee mug on a white seamless studio background' \
@@ -36,6 +39,7 @@ to them in the prompt.
 
 ```bash
 npx -y @transloadit/node image generate \
+  --model openai/gpt-image-2.5-flare \
   --input ./person1.jpg \
   --input ./person2.jpg \
   --input ./background.jpg \
@@ -44,9 +48,11 @@ npx -y @transloadit/node image generate \
 ```
 
 Notes:
-- The CLI defaults to `google/nano-banana-2`.
-- Use `--model openai/gpt-image-2` for OpenAI image generation. The older `gpt-image-2` spelling is
-  still accepted by API2 for backwards compatibility.
+
+- Use `--model openai/gpt-image-2.5-flare` by default, or `--model openai/gpt-image-2.5-sunburst`
+  for precision-focused work.
+- Explicit `--model openai/gpt-image-2` and Google Nano Banana selections remain supported. The
+  older `gpt-image-2` spelling still selects GPT Image 2, not Images 2.5.
 - Repeated `--input` values are bundled into a single `/image/generate` assembly.
 - Prompt-only generation still works without any `--input`.
 - Without `--output`, prompt-only and multi-input runs default to the current working directory.
@@ -58,5 +64,7 @@ npx -y @transloadit/node assemblies get <assemblyIdOrUrl> -j
 ```
 
 Notes:
-- Some generator/AI robots can be account-gated; if the assembly fails with capability or
-  availability errors, switch models or confirm the feature is enabled for your account.
+
+- Images 2.5 requires the matching API2 backend rollout. If a model is unavailable or account-gated,
+  report that limitation and confirm an alternative with the user; do not silently change an
+  explicit model choice or retry indefinitely.
