@@ -1,6 +1,6 @@
 ---
 name: transform-transcribe-audio-with-transloadit
-description: One-off transcription of local audio or video files to text or subtitle files using Transloadit via the official `@transloadit/node` CLI. Use when the user wants speech in local media converted to `.txt`, `.json`, `.srt`, or `.webvtt`; prefer the `speech transcribe` intent with Replicate while ElevenLabs Scribe is not ready.
+description: One-off transcription of local audio or video files to text or subtitle files using Transloadit via the official `@transloadit/node` CLI. Use when the user wants speech in local media converted to `.txt`, `.json`, `.srt`, or `.webvtt`; prefer the `speech transcribe` intent with Replicate.
 ---
 
 # Transcribe Audio or Video with Transloadit
