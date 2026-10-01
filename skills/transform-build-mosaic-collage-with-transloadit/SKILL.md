@@ -1,8 +1,8 @@
 ---
 name: transform-build-mosaic-collage-with-transloadit
-description: One-off justified mosaic photo collage (N local images -> single image) using the official `@transloadit/node` CLI. Uses the `/image/merge` Robot's `mosaic` effect to build a tiled layout that keeps every photo fully visible, and downloads the result to an explicit output path via `--output`.
+description: One-off justified mosaic photo collage (N local images -> single image) using the official `@transloadit/node` CLI. Uses the `/image/merge` Robot's `mosaic` effect to build a justified tiled layout with center-cropped photos, and downloads the result to an explicit output path via `--output`.
 when_to_use: |
-  Triggers when the user asks to create a mosaic collage, tile photos edge-to-edge, build a justified photo grid, make a Flickr-style photo layout, or compose N photos into a clean editorial collage that keeps every photo fully visible. Choose this over the polaroid skill when the vibe is clean and editorial (product grids, portfolio hero sections, social previews from a batch), and over `transform-generate-image-with-transloadit` when the input is N existing photos rather than a text prompt.
+  Triggers when the user asks to create a mosaic collage, tile photos edge-to-edge, build a justified photo grid, make a Flickr-style photo layout, or compose N photos into a clean editorial collage where center-cropping is acceptable. Choose this over the polaroid skill when the vibe is clean and editorial (product grids, portfolio hero sections, social previews from a batch), and over `transform-generate-image-with-transloadit` when the input is N existing photos rather than a text prompt. Do not choose this effect when every pixel of each input must remain visible.
 ---
 
 # Inputs
@@ -59,5 +59,5 @@ npx -y @transloadit/node assemblies get <assemblyIdOrUrl> -j
 Notes:
 - Repeated `--input` values are bundled into a single `/image/merge` assembly.
 - The mosaic effect reads each input's aspect ratio and solves for a justified tile layout — portrait + landscape mixes generally produce more interesting layouts than uniform sizes.
-- Unlike the polaroid-stack effect, tiles are center-cropped to fit their allocated rectangle. Any portion of a photo can be cropped off — if every pixel matters, resize beforehand with `/image/resize` and `resize_strategy: fit`.
+- Tiles are center-cropped to fit their allocated rectangle. Parts of a photo can be cropped off. Resizing inputs beforehand with `/image/resize` and `resize_strategy: fit` does not guarantee that the mosaic layout will preserve every pixel.
 - Prefer an explicit output filename (e.g. `./collage.jpg` or `./collage.png`) over a directory output so the extension is deterministic.
