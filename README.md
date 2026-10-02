@@ -54,6 +54,7 @@ Examples:
 - `transform-transcribe-audio-with-transloadit`
 - `transform-build-polaroid-collage-with-transloadit`
 - `transform-build-mosaic-collage-with-transloadit`
+- `transform-upload-local-file-with-transloadit`
 - `integrate-uppy-transloadit-s3-uploading-to-nextjs`
 
 The public catalog is whatever currently lives under [`skills/`](/Users/kvz/code/skills/skills).
