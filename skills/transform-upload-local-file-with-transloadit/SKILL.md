@@ -53,16 +53,17 @@ If the file is already at a public URL, pass it to `transloadit_create_assembly`
 
    ```bash
    FILE='/mnt/user-data/uploads/photo.jpg'
-   curl -sS -o /dev/null -w '%{http_code}\n' -X POST 'https://api2.transloadit.com/resumable/files/' \
+   curl -sS -o /dev/null -w '%{http_code}\n' -X POST -T "$FILE" \
+     --request-target '/resumable/files/' 'https://api2.transloadit.com/resumable/files/' \
      -H 'Tus-Resumable: 1.0.0' \
      -H "Upload-Length: $(wc -c < "$FILE" | tr -d ' ')" \
      -H "Upload-Metadata: assembly_url …,fieldname …,filename $(basename "$FILE" | tr -d '\n' | base64 | tr -d '\n')" \
-     -H 'Content-Type: application/offset+octet-stream' \
-     --data-binary @"$FILE"
+     -H 'Content-Type: application/offset+octet-stream'
    ```
 
    Run the command exactly as returned (only replace the `FILE` value); its `Upload-Metadata`
-   values are specific to this Assembly. It prints `201` when the file is uploaded.
+   values are specific to this Assembly. `-T` streams the file, so large videos are fine. It
+   prints `201` when the file is uploaded.
 
 3. Call `transloadit_wait_for_assembly` with the Assembly's `assembly_ssl_url`, then use the result
    files' `ssl_url` values (download them with `curl -o` if the user wants local copies).
@@ -93,6 +94,6 @@ npx -y @transloadit/node upload /ABS/PATH/photo.jpg \
 - Anything other than `201` means the upload did not finish: a connection error usually means the
   sandbox may not reach Transloadit (check the network access setting); `4xx` means the Assembly no
   longer accepts uploads, so create a new one.
-- Use one `upload_instructions` entry per file; the Assembly starts once all expected uploads
-  arrived.
+- Use one `upload_instructions` entry per file (up to 100 per Assembly); the Assembly starts once
+  all expected uploads arrived.
 - Never paste `TRANSLOADIT_SECRET` or bearer tokens into sandbox commands; the MCP server keeps them.
