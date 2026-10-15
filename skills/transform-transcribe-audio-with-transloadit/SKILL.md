@@ -52,7 +52,7 @@ npx -y @transloadit/node speech transcribe \
 - Default provider: `replicate` until ElevenLabs Scribe is ready
 - Supported explicit providers: `--provider aws`, `--provider gcp`, `--provider replicate`
 - Do not use `--provider transloadit`; that internal Whisper route is work in progress
-- For `aws` and `gcp`, use `--source-language <BCP-47-code>` when the input language is known, such as `fr-FR`
+- For `aws` and `gcp`, use `--source-language <BCP-47-code>`, such as `fr-FR`; omitting it defaults to `en-US`
 - For `replicate`, use `--target-language <full-lowercase-English-name>` as a spoken-language hint, such as `french`; omit it to detect the language automatically
 - To translate, first transcribe the speech, then process the transcript with `/text/translate`. The transcription language flags do not translate speech.
 
