@@ -1,65 +1,32 @@
 ---
 name: transform-remove-background-with-transloadit
-description: One-off background removal (local image -> transparent PNG) using the official `@transloadit/node` CLI. Use a minimal `/image/bgremove` steps JSON and download the result to an explicit `.png` path via `-o`.
+description: Remove a local photo's background and download a transparent PNG using the remove-background Builtin and the official Transloadit CLI.
 ---
 
-# Inputs
+# Remove a photo background
 
-- Absolute path to a local input image
-- Optional output path; default to an explicit sibling `.png`
+Confirm the local image exists. Use an explicit sibling `.png` output unless the user gives a path.
+Let the CLI resolve credentials from the shell, cwd `.env`, then `~/.transloadit/credentials`.
 
-# Prepare Instructions
+Discover the deployed contract before running; read its `fields_schema` and the selected Template's
+`content.fields` defaults with `templates get <id> --json`:
 
-Resolve credentials in this order:
-- Shell environment variables
-- The current working directory `.env` only
-- `~/.transloadit/credentials`
-
-If your `.env` lives in a parent directory, export the variables into the shell first.
-
-Create `steps.json` in the current working directory.
-
-Important:
-- For the current CLI, the file passed to `--steps` must be a flat object keyed by step name.
-- Do not wrap the steps under a top-level `"steps"` key.
-
-```json
-{
-  ":original": {
-    "robot": "/upload/handle"
-  },
-  "background_removed": {
-    "use": ":original",
-    "robot": "/image/bgremove",
-    "format": "png",
-    "result": true
-  }
-}
+```bash
+npx -y @transloadit/node templates list --include-builtin exclusively-latest --fields id,description,fields_schema --json
 ```
 
-# Run (Local Input Image)
+Use the returned `builtin/remove-background@…` ID as `--template` (`template_id` in the API).
+If it is absent or has no `fields_schema`, report the deployment gap before creating an Assembly.
+Merge defaults with caller fields before validation; runtime cross-field checks remain authoritative.
 
 ```bash
 npx -y @transloadit/node assemblies create \
-  --steps ./steps.json \
-  -i ./input/source.jpg \
-  -o ./out/result.png
+  --template builtin/remove-background@latest \
+  --field format=png --field select=foreground \
+  --input /ABS/PATH/photo.jpg --output /ABS/PATH/cutout.png
 ```
 
-Replace `./input/source.jpg` with your real input image path when needed.
-
-After the command finishes, confirm the PNG exists at the expected output path.
-
-# Debug If It Fails
-
-```bash
-npx -y @transloadit/node assemblies get <assemblyIdOrUrl> -j
-```
-
-Notes:
-- Keep `format: "png"` so the downloaded output preserves transparency.
-- Prefer `~/.transloadit/credentials` as the default fallback when you want a reusable user-level setup.
-- A current-directory `.env` still takes precedence, so avoid it when deterministic account selection matters.
-- If credentials only exist in a repo-root `.env`, run the command from that directory or export the variables first.
-- Prefer an explicit PNG filename like `./out/result.png`. With the current CLI, using a directory output for a single result may preserve the input path instead of giving you a `.png` filename.
-- Prefer a clear foreground subject photo; background removal quality depends on the source image.
+Keep the Builtin's provider default. Automatic/cloud providers require PNG foreground output;
+other selections need the provider allowed by the deployed contract. Do not copy Robot steps.
+Confirm the output is non-empty, has transparency, and retains the subject's edges and hair.
+Inspect failures with `npx -y @transloadit/node assemblies get <assemblyIdOrUrl> --json`.

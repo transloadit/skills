@@ -1,65 +1,39 @@
 ---
 name: transform-transcribe-audio-with-transloadit
-description: One-off transcription of local audio or video files to text or subtitle files using Transloadit via the official `@transloadit/node` CLI. Use when the user wants speech in local media converted to `.txt`, `.json`, `.srt`, or `.webvtt`; prefer the `speech transcribe` intent with Replicate.
+description: Transcribe local audio or video to text, timestamped JSON, SRT or WebVTT using the transcribe Builtin and the official Transloadit CLI.
 ---
 
-# Transcribe Audio or Video with Transloadit
+# Transcribe a recording
 
-## Use this for
+Confirm the local recording exists. Default to a sibling `.txt`; match the extension to the requested
+format. Let the CLI resolve credentials from the shell, cwd `.env`, then `~/.transloadit/credentials`.
 
-- Local audio or video files that should become text transcripts or subtitle files
-- One or many files, with outputs downloaded locally
-- Agent workflows where credentials may already be in the shell, a local `.env`, or
-  `~/.transloadit/credentials`
-
-## Inputs
-
-- Absolute path to one or more local audio or video files
-- Optional output path; default is the same basename with `.txt`
-- Optional format: `text`, `json`, `srt`, or `webvtt`
-
-## Workflow
-
-1. Confirm each input file exists and resolve it to an absolute path.
-2. Derive the output path:
-   - Single input and no requested output: same directory and basename with `.txt`
-   - Multiple inputs and no requested output: a `transcripts/` directory next to the inputs
-   - Use `.json`, `.srt`, or `.webvtt` when the user asks for that format
-3. Let the CLI resolve auth automatically in this order:
-   - Shell environment variables
-   - The current working directory `.env` only
-   - `~/.transloadit/credentials`
-   If your `.env` lives in a parent directory, export the variables into the shell first.
-4. Run the transcription with the official CLI intent:
+Discover the deployed contract before running; read its `fields_schema` and the selected Template's
+`content.fields` defaults with `templates get <id> --json`:
 
 ```bash
-npx -y @transloadit/node speech transcribe --input /ABS/PATH/input.opus --output /ABS/PATH/input.txt
+npx -y @transloadit/node templates list --include-builtin exclusively-latest --fields id,description,fields_schema --json
 ```
 
-For multiple files, repeat `--input` and write to an output directory:
+Use the returned `builtin/transcribe@…` ID as `--template` (`template_id` in the API).
+If it is absent or has no `fields_schema`, report the deployment gap before creating an Assembly.
+Merge defaults with caller fields before validation; runtime cross-field checks remain authoritative.
 
 ```bash
-npx -y @transloadit/node speech transcribe \
-  --input /ABS/PATH/a.opus \
-  --input /ABS/PATH/b.opus \
-  --output /ABS/PATH/transcripts/
+npx -y @transloadit/node assemblies create \
+  --template builtin/transcribe@latest --field format=text \
+  --input /ABS/PATH/recording.wav --output /ABS/PATH/recording.txt
 ```
 
-## Options
+Explicitly select text above; the Builtin's default format may differ. For subtitles, change `format`
+and the output extension together, for example `format=srt` and `.srt`. For multiple recordings,
+repeat `--input` and use an output directory. Keep provider selection and supported values in the
+catalog. `source_language` describes spoken language for AWS/GCP; `target_language` is a Replicate
+spoken-language hint, never a translation request. Use `--field source_language=fr-FR` or
+`--field target_language=french` with the appropriate provider. Translation requires a separate
+workflow after transcription.
 
-- Default format: `text`
-- Other formats: `--format json`, `--format srt`, `--format webvtt`
-- Default provider: `replicate` until ElevenLabs Scribe is ready
-- Supported explicit providers: `--provider aws`, `--provider gcp`, `--provider replicate`
-- Do not use `--provider transloadit`; that internal Whisper route is work in progress
-- For `aws` and `gcp`, use `--source-language <BCP-47-code>`, such as `fr-FR`; omitting it defaults to `en-US`
-- For `replicate`, use `--target-language <full-lowercase-English-name>` as a spoken-language hint, such as `french`; omit it to detect the language automatically
-- To translate, first transcribe the speech, then process the transcript with `/text/translate`. The transcription language flags do not translate speech.
-
-## Notes
-
-- Prefer `@transloadit/node`; it is the official CLI route and exposes `speech transcribe`.
-- If the command errors with a missing subcommand, update to a newer `@transloadit/node` release
-  that includes the speech transcription intent.
-- Keep secrets local-only; never print `TRANSLOADIT_SECRET` or copy it into browser code.
-- After transcription, confirm each expected output file exists and is non-empty.
+Use the Builtin template route: the older `speech transcribe` intent constructs Robot steps.
+Confirm each output is non-empty; read the transcript or check subtitle cues/timestamps against the
+recording.
+Inspect failures with `npx -y @transloadit/node assemblies get <assemblyIdOrUrl> --json`.
