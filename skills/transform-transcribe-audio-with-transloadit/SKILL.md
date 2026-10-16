@@ -27,10 +27,10 @@ npx -y @transloadit/node assemblies create \
 
 Explicitly select text above; the Builtin's default format may differ. For subtitles, change `format`
 and the output extension together, for example `format=srt` and `.srt`. For multiple recordings,
-repeat `--input` and use an output directory. Keep provider selection and supported values in the
+run once per recording with its own explicit output filename. Keep supported provider values in the
 catalog. `source_language` describes spoken language for AWS/GCP; `target_language` is a Replicate
-spoken-language hint, never a translation request. Use `--field source_language=fr-FR` or
-`--field target_language=french` with the appropriate provider. Translation requires a separate
+spoken-language hint, never a translation request. Pair `--field provider=aws` with
+`--field source_language=fr-FR`, or `--field provider=replicate` with `--field target_language=french`. Translation requires a separate
 workflow after transcription.
 
 Use the Builtin template route: the older `speech transcribe` intent constructs Robot steps.

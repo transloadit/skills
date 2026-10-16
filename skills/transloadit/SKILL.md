@@ -111,6 +111,9 @@ console.log(JSON.stringify({ assembly_id: assembly.assembly_id, results: assembl
 ```
 
 Download each result's `ssl_url` to an explicit local path and inspect the actual output, including
-warnings. Use output directories for covers, captioned video plus SRT, or any other multiple results.
+warnings. Create directories with `mkdir -p` before CLI downloads of covers, captioned video plus
+SRT, or other multiple results; a trailing slash alone does not select directory mode. For one
+result per input, use explicit filenames with the output extension; generic directory downloads
+can preserve the input extension.
 Existing Robot/semantic intents can still serve other workflows; the approved outcomes use the
 Builtin route so the server owns their steps and field contract.

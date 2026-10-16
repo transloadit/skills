@@ -16,11 +16,12 @@ Discover the deployed contract before running; read its `fields_schema` and the 
 npx -y @transloadit/node templates list --include-builtin exclusively-all --fields id,description,fields_schema --json
 ```
 
-Use the returned `builtin/caption-video@…` ID as `--template` (`template_id` in the API).
+Select `builtin/caption-video@0.0.1` from that catalog and use it as `--template` (API `template_id`).
 If it is absent or has no `fields_schema`, report the deployment gap before creating an Assembly.
 Merge defaults with caller fields before validation; runtime cross-field checks remain authoritative.
 
 ```bash
+mkdir -p /ABS/PATH/captioned/
 npx -y @transloadit/node assemblies create \
   --template builtin/caption-video@0.0.1 \
   --input /ABS/PATH/video.mp4 --output /ABS/PATH/captioned/

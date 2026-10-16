@@ -29,7 +29,7 @@ npx -y @transloadit/node assemblies create \
 The Builtin routes photos through OCR and converts supported Office files before extraction.
 Documents try native text with OCR fallback. Preserve the catalog's explicit OCR-provider default.
 For native PDF page selection, use `--field text_method=native --field page_range=2`; password and
-per-page grouping also require native extraction. Per-page results need an output directory.
+per-page grouping also require native extraction. Create the output directory before per-page downloads.
 Read current formats, provider choices and cross-field constraints from the catalog; runtime
 validation remains authoritative. Unsupported files can be skipped, so an empty result is not success.
 Do not replace the Builtin with a compatibility OCR pipeline.

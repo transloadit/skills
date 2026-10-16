@@ -20,6 +20,7 @@ If it is absent or has no `fields_schema`, report the deployment gap before crea
 Merge defaults with caller fields before validation; runtime cross-field checks remain authoritative.
 
 ```bash
+mkdir -p /ABS/PATH/covers/
 npx -y @transloadit/node assemblies create \
   --template builtin/video-covers@latest --field format=jpeg \
   --input /ABS/PATH/video.mp4 --output /ABS/PATH/covers/
