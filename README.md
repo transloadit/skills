@@ -47,10 +47,16 @@ Categories:
 - `integrate-*`: real-world integration guides (validated via `scenarios/` + E2E, but not requiring any test harness)
 
 Examples:
+- `transform-prepare-image-with-transloadit`
+- `transform-make-video-covers-with-transloadit`
+- `transform-extract-text-with-transloadit`
+- `transform-caption-video-with-transloadit`
+- `transform-capture-webpage-with-transloadit`
+- `transform-encode-video-with-transloadit`
 - `transform-generate-image-with-transloadit`
 - `transform-remove-background-with-transloadit`
 - `transform-describe-image-with-transloadit`
-- `transform-convert-markdown-to-pdf-with-transloadit`
+- `transform-convert-markdown-to-pdf-with-transloadit` (also Office, HTML and text to PDF)
 - `transform-transcribe-audio-with-transloadit`
 - `transform-build-polaroid-collage-with-transloadit`
 - `transform-build-mosaic-collage-with-transloadit`
@@ -69,6 +75,13 @@ Builtin template discovery (token-efficient NDJSON, good for agents):
 ```bash
 npx -y @transloadit/node templates list --include-builtin exclusively-latest --fields id,name --json
 ```
+
+The nine approved outcomes use Builtin `template_id` plus fields through the official CLI/SDK.
+Their field contracts come from `templates list --fields id,description,fields_schema` with the same
+`--include-builtin` and `--json` options; defaults come from `content.fields` via `templates get <id> --json`.
+See the [router skill](skills/transloadit/SKILL.md#builtin-discovery-and-execution) for typed fields,
+validation and deployment gates. Transcription, background removal and document-to-PDF reuse their
+existing skill names.
 
 ## Conventions (For Agents)
 
