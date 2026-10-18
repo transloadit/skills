@@ -42,11 +42,13 @@ Note: this repo also contains developer-only skills under `.ai/dev-skills/` for 
 ## Skill Catalog
 
 Categories:
+- `admin-merge`: update a GitHub PR with main, follow CI, and squash merge with admin privileges (requires GitHub access and the shared Transloadit CI watcher)
 - `docs-*`: offline reference lookups (no API calls)
 - `transform-*`: one-off transforms (CLI driven, outputs downloaded via `-o`)
 - `integrate-*`: real-world integration guides (validated via `scenarios/` + E2E, but not requiring any test harness)
 
 Examples:
+- [`admin-merge`](skills/admin-merge/SKILL.md)
 - `transform-prepare-image-with-transloadit`
 - `transform-make-video-covers-with-transloadit`
 - `transform-extract-text-with-transloadit`
