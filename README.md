@@ -42,13 +42,11 @@ Note: this repo also contains developer-only skills under `.ai/dev-skills/` for 
 ## Skill Catalog
 
 Categories:
-- `admin-merge`: update a GitHub PR with main, follow CI, and squash merge with admin privileges (requires GitHub access and the shared Transloadit CI watcher)
 - `docs-*`: offline reference lookups (no API calls)
 - `transform-*`: one-off transforms (CLI driven, outputs downloaded via `-o`)
 - `integrate-*`: real-world integration guides (validated via `scenarios/` + E2E, but not requiring any test harness)
 
 Examples:
-- [`admin-merge`](skills/admin-merge/SKILL.md)
 - `transform-prepare-image-with-transloadit`
 - `transform-make-video-covers-with-transloadit`
 - `transform-extract-text-with-transloadit`
@@ -64,7 +62,7 @@ Examples:
 - `transform-build-mosaic-collage-with-transloadit`
 - `integrate-uppy-transloadit-s3-uploading-to-nextjs`
 
-The public catalog is whatever currently lives under [`skills/`](/Users/kvz/code/skills/skills).
+The public catalog is whatever currently lives under [`skills/`](skills/).
 For a current list, use:
 
 ```bash
@@ -129,6 +127,7 @@ Conventions:
 1. Create `skills/<skill-name>/SKILL.md` with tight scope and a runnable checklist.
 2. If it’s an integration, create a matching `scenarios/<skill-name>/` reference implementation and validate it with an E2E test.
 3. Keep test-harness specifics out of the skill. The skill should read like guidance for a normal production app.
+4. Publish only skills that help Transloadit customers. `npx skills add … --all` installs everything under `skills/`, so internal team workflows (merging, CI, release chores) do not belong here.
 
 ### Try-Skill Harness
 
